@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'UICard.dart';
+import 'empDetails.dart';
 
 class HrDashboardScreen extends StatelessWidget {
   final String userName;
@@ -15,12 +16,18 @@ class HrDashboardScreen extends StatelessWidget {
           crossAxisCount: 2,
           crossAxisSpacing: 16,
           mainAxisSpacing: 16,
-          children: const [
-            const DashboardCard(
+          children: [
+            DashboardCard(
               title: 'Employees',
               value: '120',
               icon: Icons.people,
               color: Colors.blue,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const EmployeeScreen()),
+                );
+              },
             ),
             const DashboardCard(
               title: 'Attendance',
