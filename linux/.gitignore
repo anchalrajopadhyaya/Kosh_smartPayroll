@@ -1,1 +1,8 @@
-flutter/ephemeral
+# Node
+node_modules/
+.env
+
+# Flutter
+build/
+.dart_tool/
+.pub-cache/
