@@ -141,9 +141,4 @@ class _ForgotPasswordState extends State<ForgotPassword> {
       ),
     );
   }
-
-  // void sendResetPasswordEmail(String email) {
-  //   // TODO: Implement API call to send password reset email
-  //   print("Sending reset password link to $email");
-  // }
 }
