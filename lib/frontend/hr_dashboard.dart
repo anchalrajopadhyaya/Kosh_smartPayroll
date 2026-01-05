@@ -5,11 +5,17 @@ import 'empDetails.dart';
 class HrDashboardScreen extends StatelessWidget {
   final String userName;
   const HrDashboardScreen({required this.userName, super.key});
+  static const Color primaryColor = Color.fromARGB(255, 24, 137, 132);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Welcome, $userName'), centerTitle: true),
+      appBar: AppBar(
+        title: Text('Welcome, $userName'),
+        backgroundColor: primaryColor,
+        foregroundColor: Colors.white,
+        centerTitle: true,
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: GridView.count(

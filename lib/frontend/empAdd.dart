@@ -1,95 +1,313 @@
-// // add_employee_screen.dart
-// import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:payroll/frontend/widgets/form_fields.dart';
 
-// class AddEmployeeScreen extends StatefulWidget {
-//   const AddEmployeeScreen({super.key});
-//   @override
-//   State<AddEmployeeScreen> createState() => _AddEmployeeScreenState();
-// }
+class AddEmployeeScreen extends StatefulWidget {
+  const AddEmployeeScreen({super.key});
 
-// class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
-//   final _formKey = GlobalKey<FormState>();
-//   final _nameController = TextEditingController();
-//   final _emailController = TextEditingController();
-//   final _usernameController = TextEditingController();
-//   final _passwordController = TextEditingController();
-//   @override
-//   void dispose() {
-//     _nameController.dispose();
-//     _emailController.dispose();
-//     _usernameController.dispose();
-//     _passwordController.dispose();
-//     super.dispose();
-//   }
+  @override
+  State<AddEmployeeScreen> createState() => _AddEmployeeScreenState();
+}
 
-//   void _saveEmployee() {
-//     if (_formKey.currentState!.validate()) {
-//       // TODO: send these to your backend / auth service
-//       // _nameController.text
-//       // _emailController.text
-//       // _usernameController.text
-//       // _passwordController.text
-//       ScaffoldMessenger.of(context).showSnackBar(
-//         const SnackBar(content: Text('Employee created successfully')),
-//       );
-//       Navigator.pop(context); // Back to EmployeeScreen
-//     }
-//   }
+class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
+  final _formKey = GlobalKey<FormState>();
 
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(title: const Text('Add Employee')),
-//       body: Padding(
-//         padding: const EdgeInsets.all(16.0),
-//         child: Form(
-//           key: _formKey,
-//           child: ListView(
-//             children: [
-//               TextFormField(
-//                 controller: _nameController,
-//                 decoration: const InputDecoration(labelText: 'Full Name'),
-//                 validator:
-//                     (v) =>
-//                         v == null || v.isEmpty ? 'Enter employee name' : null,
-//               ),
-//               TextFormField(
-//                 controller: _emailController,
-//                 decoration: const InputDecoration(labelText: 'Email'),
-//                 keyboardType: TextInputType.emailAddress,
-//                 validator: (v) => v == null || v.isEmpty ? 'Enter email' : null,
-//               ),
-//               const SizedBox(height: 16),
-//               const Text(
-//                 'Login Credentials',
-//                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-//               ),
-//               TextFormField(
-//                 controller: _usernameController,
-//                 decoration: const InputDecoration(labelText: 'Username'),
-//                 validator:
-//                     (v) => v == null || v.isEmpty ? 'Enter username' : null,
-//               ),
-//               TextFormField(
-//                 controller: _passwordController,
-//                 decoration: const InputDecoration(labelText: 'Password'),
-//                 obscureText: true,
-//                 validator:
-//                     (v) =>
-//                         v == null || v.length < 6 ? 'Min 6 characters' : null,
-//               ),
-//               const SizedBox(height: 24),
-//               SizedBox(
-//                 width: double.infinity,
-//                 child: ElevatedButton(
-//                   onPressed: _saveEmployee,
-//                   child: const Text('Save Employee'),
-//                 ),
-//               ),
-//             ],
-//           ),
-//         ),
-//       ),
-//     );
-//   }
-// }
+  DateTime? dob;
+  DateTime? startDate;
+  String? department;
+
+  final TextEditingController firstName = TextEditingController();
+  final TextEditingController lastName = TextEditingController();
+  final TextEditingController email = TextEditingController();
+  final TextEditingController phone = TextEditingController();
+  final TextEditingController address = TextEditingController();
+  final TextEditingController jobTitle = TextEditingController();
+  final TextEditingController salary = TextEditingController();
+  final TextEditingController city = TextEditingController();
+  final TextEditingController district = TextEditingController();
+  final TextEditingController province = TextEditingController();
+  final TextEditingController ward = TextEditingController();
+
+  Future<void> _pickDate(BuildContext context, bool isDob) async {
+    final date = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(1950),
+      lastDate: DateTime(2100),
+    );
+
+    if (date != null) {
+      setState(() {
+        isDob ? dob = date : startDate = date;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xfff4f6f9),
+      appBar: AppBar(
+        backgroundColor: const Color.fromARGB(255, 24, 137, 132),
+        elevation: 0,
+        leading: TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text("Cancel", style: TextStyle(color: Colors.white)),
+        ),
+        title: const Text(
+          "Add Employee",
+          style: TextStyle(color: Colors.white),
+        ),
+        centerTitle: true,
+        actions: [
+          TextButton(
+            onPressed: () {},
+            child: const Text("Save", style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              /// Avatar
+              Center(
+                child: Column(
+                  children: [
+                    Stack(
+                      children: [
+                        const CircleAvatar(
+                          radius: 45,
+                          backgroundColor: Color(0xfff0dcd3),
+                          child: Icon(
+                            Icons.person,
+                            size: 50,
+                            color: Colors.grey,
+                          ),
+                        ),
+                        Positioned(
+                          bottom: 0,
+                          right: 0,
+                          child: CircleAvatar(
+                            radius: 14,
+                            backgroundColor: Color.fromARGB(255, 24, 137, 132),
+                            child: const Icon(
+                              Icons.camera_alt,
+                              size: 16,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      "Upload Photo",
+                      style: TextStyle(
+                        color: Color.fromARGB(255, 24, 137, 132),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 24),
+
+              _section("PERSONAL INFORMATION"),
+
+              _twoFields(
+                _field("First Name", firstName, hint: "first Name"),
+                _field("Last Name", lastName, hint: "last name"),
+              ),
+
+              _dateField("Date of Birth", dob, () => _pickDate(context, true)),
+
+              _section("CONTACT DETAILS"),
+              _field(
+                "Email Address",
+                email,
+                hint: "xx@company.com",
+                icon: Icons.email,
+              ),
+
+              _field(
+                "Phone Number",
+                phone,
+                hint: "(977) 9841235689",
+                icon: Icons.phone,
+              ),
+
+              _section("PERMANENT ADDRESS"),
+              _twoFields(
+                _field("City", city, hint: "Kathmandu"),
+                _field("District", district, hint: "Kathmandu"),
+              ),
+
+              _twoFields(
+                _field("Province", province, hint: "Bagmati"),
+                _field("Ward No.", ward, hint: "10"),
+              ),
+
+              _field("PAN Number", address, hint: "XXXXXX0000"),
+              _field("Citizenship Number", address, hint: "XXXXXX0000"),
+              _section("JOB & ROLE"),
+
+              _field("Job Title", jobTitle, hint: "Technical Lead"),
+
+              _dropdown(),
+
+              _dateField(
+                "Start Date",
+                startDate,
+                () => _pickDate(context, false),
+              ),
+
+              _section("COMPENSATION"),
+
+              _field(
+                "Annual Salary",
+                salary,
+                hint: "\$ 0.00",
+                icon: Icons.attach_money,
+              ),
+
+              const SizedBox(height: 28),
+
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  icon: const Icon(Icons.person_add),
+                  label: const Text("Create Employee Profile"),
+                  onPressed: () {},
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color.fromARGB(255, 24, 137, 132),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _section(String title) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      child: Text(
+        title,
+        style: const TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.bold,
+          color: Colors.blueGrey,
+        ),
+      ),
+    );
+  }
+
+  Widget _field(
+    String label,
+    TextEditingController controller, {
+    String? hint,
+    IconData? icon,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          AppFormLabel(label, color: Colors.blueGrey),
+          const SizedBox(height: 6),
+          AppInputField(
+            controller: controller,
+            hint: hint ?? "",
+            icon: icon,
+            textColor: Colors.black,
+            fillColor: Colors.white,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _twoFields(Widget left, Widget right) {
+    return Row(
+      children: [
+        Expanded(child: left),
+        const SizedBox(width: 12),
+        Expanded(child: right),
+      ],
+    );
+  }
+
+  Widget _dateField(String label, DateTime? date, VoidCallback onTap) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          AppFormLabel(label, color: Colors.blueGrey),
+          const SizedBox(height: 6),
+          InkWell(
+            onTap: onTap,
+            child: InputDecorator(
+              decoration: InputDecoration(
+                suffixIcon: const Icon(Icons.calendar_today),
+                filled: true,
+                fillColor: Colors.white,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+              child: Text(
+                date == null
+                    ? "mm/dd/yyyy"
+                    : "${date.month}/${date.day}/${date.year}",
+                style: const TextStyle(color: Colors.grey),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _dropdown() {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const AppFormLabel("Department", color: Colors.blueGrey),
+          const SizedBox(height: 6),
+          DropdownButtonFormField<String>(
+            value: department,
+            items: const [
+              DropdownMenuItem(value: "Accountant", child: Text("Accountant")),
+              DropdownMenuItem(value: "Employee", child: Text("Employee")),
+              DropdownMenuItem(value: "HR", child: Text("HR")),
+            ],
+            onChanged: (value) => setState(() => department = value),
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: Colors.white,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: BorderSide.none,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

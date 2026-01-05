@@ -22,8 +22,10 @@ class _LoginScreenState extends State<LoginScreen> {
       _isLoading = true;
       _error = null;
     });
-    // final url = Uri.parse('http://10.0.2.2:3000/login');
-    final url = Uri.parse('http://192.168.50.116:3000/login');
+
+    final url = Uri.parse('http://10.0.2.2:3000/login');
+    // final url = Uri.parse('http://192.168.50.116:3000/login');
+    // final url = Uri.parse('http://10.24.4.122:3000/login');
 
     try {
       final response = await http.post(
@@ -35,10 +37,10 @@ class _LoginScreenState extends State<LoginScreen> {
         }),
       );
 
-      print('FULL RESPONSE:');
-      print('Status: ${response.statusCode}');
-      print('Headers: ${response.headers}');
-      print('Body: ${response.body}');
+      // print('FULL RESPONSE:');
+      // print('Status: ${response.statusCode}');
+      // print('Headers: ${response.headers}');
+      // print('Body: ${response.body}');
 
       if (!mounted) return;
 
@@ -115,7 +117,7 @@ class _LoginScreenState extends State<LoginScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const SizedBox(height: 50),
-                // Logo
+                //Logo
                 Container(
                   width: 90,
                   height: 90,
@@ -136,7 +138,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 const SizedBox(height: 24),
 
-                // Title
+                //Title
                 const Text(
                   "Welcome to Kosh",
                   style: TextStyle(
@@ -155,7 +157,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 const SizedBox(height: 36),
 
-                // Employee Email
+                //Employee Email
                 _label("Email"),
                 const SizedBox(height: 8),
                 _inputField(
@@ -166,13 +168,12 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 const SizedBox(height: 20),
 
-                // Password
+                //Password
                 _label("Password"),
                 const SizedBox(height: 8),
                 TextField(
                   controller: _passwordController,
-                  obscureText:
-                      !_isPasswordVisible, // Corrected: Toggle based on visibility
+                  obscureText: !_isPasswordVisible,
                   style: const TextStyle(color: Colors.white),
                   decoration: InputDecoration(
                     hintText: "Enter your password",
@@ -181,9 +182,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       icon: Icon(
                         _isPasswordVisible
                             ? Icons
-                                .visibility_off // Eye closed when visible (to hide)
-                            : Icons
-                                .visibility, // Eye open when hidden (to show)
+                                .visibility_off //eye closed
+                            : Icons.visibility, //eye open
                         color: Colors.white70,
                       ),
                       onPressed: () {
@@ -215,7 +215,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 const SizedBox(height: 16),
 
-                // Sign In Button
+                //Log In Button
                 SizedBox(
                   width: double.infinity,
                   height: 55,
@@ -246,7 +246,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 const SizedBox(height: 18),
 
-                // Forgot Password
+                //Forgot Password
                 TextButton(
                   onPressed: () {},
                   child: const Text(
