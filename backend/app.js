@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const pool = require('./db'); //import pool
+const pool = require("./db");//import pool
 
 const app = express();
 app.use(cors());
@@ -32,6 +32,11 @@ app.post('/login', async (req, res) => {
     return res.status(500).json({ message: 'Server error' });
   }
 });
+
+
+const employeeRoutes = require("./routes/employees");
+app.use("/api", employeeRoutes);
+
 
 const PORT = 3000;
 app.listen(PORT, () => {

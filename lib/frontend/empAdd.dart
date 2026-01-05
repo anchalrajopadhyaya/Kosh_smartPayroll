@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:payroll/frontend/widgets/form_fields.dart';
 
 class AddEmployeeScreen extends StatefulWidget {
@@ -26,6 +29,8 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
   final TextEditingController district = TextEditingController();
   final TextEditingController province = TextEditingController();
   final TextEditingController ward = TextEditingController();
+  final TextEditingController PAN = TextEditingController();
+  final TextEditingController citizenshipNo = TextEditingController();
 
   Future<void> _pickDate(BuildContext context, bool isDob) async {
     final date = await showDatePicker(
@@ -151,8 +156,9 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
                 _field("Ward No.", ward, hint: "10"),
               ),
 
-              _field("PAN Number", address, hint: "XXXXXX0000"),
-              _field("Citizenship Number", address, hint: "XXXXXX0000"),
+              _field("PAN Number", PAN, hint: "XXXXXX0000"),
+
+              _field("Citizenship Number", citizenshipNo, hint: "XXXXXX0000"),
               _section("JOB & ROLE"),
 
               _field("Job Title", jobTitle, hint: "Technical Lead"),
@@ -181,7 +187,7 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
                 child: ElevatedButton.icon(
                   icon: const Icon(Icons.person_add),
                   label: const Text("Create Employee Profile"),
-                  onPressed: () {},
+                  onPressed: _createEmployee,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color.fromARGB(255, 24, 137, 132),
                     foregroundColor: Colors.white,
@@ -309,5 +315,51 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
         ],
       ),
     );
+  }
+
+  Future<void> _createEmployee() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    final url = Uri.parse("http://10.0.2.2:3000/api/employees");
+
+    final body = {
+      "firstName": firstName.text.trim(),
+      "lastName": lastName.text.trim(),
+      "email": email.text.trim(),
+      "phone": phone.text.trim(),
+      "city": city.text.trim(),
+      "district": district.text.trim(),
+      "province": province.text.trim(),
+      "ward": ward.text.trim(),
+      "jobTitle": jobTitle.text.trim(),
+      "department": department,
+      "dob": dob?.toIso8601String(),
+      "startDate": startDate?.toIso8601String(),
+      "salary": salary.text.trim(),
+    };
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode(body),
+      );
+
+      if (response.statusCode == 201) {
+        final data = jsonDecode(response.body);
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Employee created (${data['employeeCode']})")),
+        );
+
+        Navigator.pop(context);
+      } else {
+        throw Exception(response.body);
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Error: $e")));
+    }
   }
 }
