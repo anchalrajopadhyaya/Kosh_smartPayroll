@@ -20,6 +20,8 @@ CREATE TABLE IF NOT EXISTS employees (
   district VARCHAR(50),
   province VARCHAR(50),
   ward VARCHAR(10),
+  PAN VARCHAR(20),
+  citizenship_no VARCHAR(50),
   job_title VARCHAR(100),
   department VARCHAR(50),
   dob DATE,

@@ -335,7 +335,7 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
       "department": department,
       "dob": dob?.toIso8601String(),
       "startDate": startDate?.toIso8601String(),
-      "salary": salary.text.trim(),
+      "salary": double.tryParse(salary.text.trim()) ?? 0.0,
     };
 
     try {
