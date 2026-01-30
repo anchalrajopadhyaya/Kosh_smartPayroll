@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const pool = require("../db");
-const {employeeSchema} = require("./employee_validator");
+const { employeeSchema } = require("./employee_validator");
 
 // Generate employee code
 function generateEmployeeCode() {
@@ -10,20 +10,18 @@ function generateEmployeeCode() {
   return `EMP-${year}-${random}`;
 }
 
+// Create new employee
 router.post("/employees", async (req, res) => {
-
-  //VALIDATE INPUT USING JOI
   const { error, value } = employeeSchema.validate(req.body, {
-    abortEarly: true
+    abortEarly: true,
   });
 
   if (error) {
     return res.status(400).json({
-      message: error.details[0].message
+      message: error.details[0].message,
     });
   }
 
-  //SAFE VALIDATED DATA
   const {
     firstName,
     lastName,
@@ -92,16 +90,47 @@ router.post("/employees", async (req, res) => {
       message: "Employee created",
       employeeCode: result.rows[0].employee_code,
     });
-
   } catch (err) {
-
-    // Duplicate email handling
     if (err.code === "23505") {
       return res.status(409).json({
-        message: "Email already exists"
+        message: "Email already exists",
       });
     }
 
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+//get emp details
+router.get("/employees", async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT
+        id,
+        employee_code,
+        first_name,
+        last_name,
+        email,
+        phone,
+        city,
+        district,
+        province,
+        ward,
+        job_title,
+        department,
+        salary,
+        dob,
+        start_date,
+        created_at
+      FROM employees
+      ORDER BY created_at DESC
+    `);
+
+    res.status(200).json({
+      message: "Employees retrieved successfully",
+      employees: result.rows,
+    });
+  } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Server error" });
   }
