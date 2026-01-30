@@ -1,47 +1,57 @@
-# Miscellaneous
-*.class
+# Environment variables
+.env
+.env.local
+.env.production
+
+# Node modules
+node_modules/
+
+# Logs
+logs
 *.log
-*.pyc
-*.swp
-.DS_Store
-.atom/
-.build/
-.buildlog/
-.history
-.svn/
-.swiftpm/
-migrate_working_dir/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
-# IntelliJ related
-*.iml
-*.ipr
-*.iws
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Dependency directories
+jspm_packages/
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# dotenv environment variable files
+.env
+.env.development.local
+.env.test.local
+.env.production.local
+.env.local
+
+# Prisma
+# Keep schema but ignore generated client and migrations if needed
+node_modules/.prisma/
+prisma/migrations/dev.db
+prisma/migrations/dev.db-journal
+
+# IDE
+.vscode/
 .idea/
+*.swp
+*.swo
+*~
 
-# The .vscode folder contains launch configuration and tasks you configure in
-# VS Code which you may wish to be included in version control, so this line
-# is commented out by default.
-#.vscode/
+# OS
+.DS_Store
+Thumbs.db
 
-# Flutter/Dart/Pub related
-**/doc/api/
-**/ios/Flutter/.last_build_id
-.dart_tool/
-.flutter-plugins
-.flutter-plugins-dependencies
-.pub-cache/
-.pub/
-/build/
-
-# Symbolication related
-app.*.symbols
-
-# Obfuscation related
-app.*.map.json
-
-# Android Studio will place build artifacts here
-/android/app/debug
-/android/app/profile
-/android/app/release
-
-/lib/generated/prisma
+# Build output
+dist/
+build/
