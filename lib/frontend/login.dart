@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'hr_dashboard.dart';
+import 'dashboard.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -37,11 +38,6 @@ class _LoginScreenState extends State<LoginScreen> {
         }),
       );
 
-      // print('FULL RESPONSE:');
-      // print('Status: ${response.statusCode}');
-      // print('Headers: ${response.headers}');
-      // print('Body: ${response.body}');
-
       if (!mounted) return;
 
       if (response.statusCode == 200) {
@@ -56,19 +52,36 @@ class _LoginScreenState extends State<LoginScreen> {
           print('Parsed data: $data');
 
           final userData = data['user'] as Map<String, dynamic>?;
-          if (userData == null) {
+          final userType =
+              data['userType'] as String?; // Extract userType from response
+
+          if (userData == null || userType == null) {
             setState(() => _error = 'Missing user data in response');
             return;
           }
 
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder:
-                  (_) =>
-                      HrDashboardScreen(userName: userData['name'] ?? 'User'),
-            ),
-          );
+          // Navigate based on user type
+          if (userType == 'hr') {
+            // Navigate to HR Dashboard
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder:
+                    (_) =>
+                        HrDashboardScreen(userName: userData['name'] ?? 'User'),
+              ),
+            );
+          } else if (userType == 'employee') {
+            // Navigate to Employee Dashboard
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (_) => EmployeeDashboard(userData: userData),
+              ),
+            );
+          } else {
+            setState(() => _error = 'Unknown user type');
+          }
         } catch (e) {
           print('JSON parse error: $e');
           setState(() => _error = 'Invalid server response: $e');
@@ -208,9 +221,25 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 16),
 
                 if (_error != null)
-                  Text(
-                    _error!,
-                    style: const TextStyle(color: Colors.redAccent),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.red.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.red.withOpacity(0.5)),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.error_outline, color: Colors.red),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            _error!,
+                            style: const TextStyle(color: Colors.red),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
 
                 const SizedBox(height: 16),
@@ -248,7 +277,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 //Forgot Password
                 TextButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    // TODO: Implement forgot password
+                  },
                   child: const Text(
                     "Forgot Password?",
                     style: TextStyle(

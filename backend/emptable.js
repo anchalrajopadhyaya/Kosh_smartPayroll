@@ -27,6 +27,7 @@ CREATE TABLE IF NOT EXISTS employees (
   dob DATE,
   start_date DATE,
   salary NUMERIC(10,2),
+  password VARCHAR(100),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 `;

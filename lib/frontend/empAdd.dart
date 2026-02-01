@@ -31,6 +31,7 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
   final TextEditingController ward = TextEditingController();
   final TextEditingController PAN = TextEditingController();
   final TextEditingController citizenshipNo = TextEditingController();
+  final TextEditingController password = TextEditingController();
 
   Future<void> _pickDate(BuildContext context, bool isDob) async {
     final date = await showDatePicker(
@@ -137,6 +138,8 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
                 hint: "xx@company.com",
                 icon: Icons.email,
               ),
+
+              _field("password", password),
 
               _field(
                 "Phone Number",
@@ -335,6 +338,7 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
       "department": department,
       "dob": dob?.toIso8601String(),
       "startDate": startDate?.toIso8601String(),
+      "password": password.text.trim(),
       "salary": double.tryParse(salary.text.trim()) ?? 0.0,
     };
 
