@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const pool = require("../db");
+const bcrypt = require("bcrypt");
 const { employeeSchema } = require("./employee_validator");
 
 // Generate employee code
@@ -37,12 +38,14 @@ router.post("/employees", async (req, res) => {
     department,
     dob,
     startDate,
+    password,
     salary,
   } = value;
 
   const employeeCode = generateEmployeeCode();
 
   try {
+    const hashedPassword = await bcrypt.hash(password, 10);
     const result = await pool.query(
       `
       INSERT INTO employees (
@@ -61,9 +64,10 @@ router.post("/employees", async (req, res) => {
         department,
         dob,
         start_date,
+        password,
         salary
       )
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)
       RETURNING employee_code
       `,
       [
@@ -82,6 +86,7 @@ router.post("/employees", async (req, res) => {
         department,
         dob,
         startDate,
+        hashedPassword,
         salary,
       ]
     );

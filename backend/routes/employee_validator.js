@@ -23,7 +23,7 @@ const employeeSchema = Joi.object({
 
   dob: Joi.date().less("now").required(),
   startDate: Joi.date().required(),
-
+  password: Joi.string().min(6).required(),
   salary: Joi.number().positive().precision(2).required()
 });
 
