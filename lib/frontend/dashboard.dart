@@ -92,7 +92,7 @@ class EmployeeDashboardState extends State<EmployeeDashboard> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    "NPR ${_formatSalary(widget.userData['salary'])}", // FIXED LINE
+                    "NPR ${_formatSalary(widget.userData['salary'])}",
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 28,
