@@ -1,12 +1,6 @@
-const { Client } = require('pg');
+import { PrismaClient } from '@prisma/client';
 
-const client1 = new Client({
-  host: 'localhost',
-  port: 5432,
-  user: 'postgres',
-  password: '4251606',
-  database: 'kosh_db',
-});
+const prisma = new PrismaClient();
 
 const createEmployeeTable = `
 CREATE TABLE IF NOT EXISTS employees (

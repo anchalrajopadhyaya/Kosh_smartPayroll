@@ -1,64 +1,39 @@
-require('dotenv').config();
-
-const express = require("express");
-const cors = require("cors");
+require("dotenv").config();
 
 const express = require("express");
 const cors = require("cors");
 const bcrypt = require("bcrypt");
-const pool = require("./db");
+const { PrismaClient } = require("@prisma/client");
 const { loginSchema } = require("./routes/employee_validator");
 
+const prisma = new PrismaClient();
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 
-//login
+// Login route
 app.post("/login", async (req, res) => {
-
-  //Validate input
   const { error, value } = loginSchema.validate(req.body);
-  if (error) {
-    return res.status(400).json({
-      message: error.details[0].message
-    });
-  }
+  if (error) return res.status(400).json({ message: error.details[0].message });
 
   const { email, password } = value;
 
   try {
-    //Find user by email ONLY
-    const result = await pool.query(
-      "SELECT id, name, email, password FROM users WHERE email = $1",
-      [email]
-    );
+    const user = await prisma.users.findUnique({ where: { email } });
 
-    if (result.rows.length === 0) {
-      return res.status(401).json({
-        message: "Invalid email or password"
-      });
+    if (!user) {
+      return res.status(401).json({ message: "Invalid email or password" });
     }
 
-    const user = result.rows[0];
-
-    //Compare hashed password
     const isMatch = await bcrypt.compare(password, user.password);
-
     if (!isMatch) {
-      return res.status(401).json({
-        message: "Invalid email or password"
-      });
+      return res.status(401).json({ message: "Invalid email or password" });
     }
 
-    //Success
     res.json({
       message: "Login successful",
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email
-      }
+      user: { id: user.id, name: user.name, email: user.email },
     });
 
   } catch (err) {
@@ -67,11 +42,11 @@ app.post("/login", async (req, res) => {
   }
 });
 
-//Employees
+// Employees routes
 const employeeRoutes = require("./routes/employees");
 app.use("/api", employeeRoutes);
 
-//server
+// Server
 const PORT = 3000;
 app.listen(PORT, () => {
   console.log(`API server running on http://localhost:${PORT}`);
