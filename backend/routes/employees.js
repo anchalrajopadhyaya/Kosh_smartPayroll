@@ -1,7 +1,9 @@
 const express = require("express");
 const router = express.Router();
-const pool = require("../db");
+const { PrismaClient } = require("@prisma/client");
 const { employeeSchema } = require("./employee_validator");
+
+const prisma = new PrismaClient();
 
 // Generate employee code
 function generateEmployeeCode() {
@@ -12,123 +14,58 @@ function generateEmployeeCode() {
 
 // Create new employee
 router.post("/employees", async (req, res) => {
-  const { error, value } = employeeSchema.validate(req.body, {
-    abortEarly: true,
-  });
-
-  if (error) {
-    return res.status(400).json({
-      message: error.details[0].message,
-    });
-  }
-
-  const {
-    firstName,
-    lastName,
-    email,
-    phone,
-    city,
-    district,
-    province,
-    ward,
-    PAN,
-    citizenshipNo,
-    jobTitle,
-    department,
-    dob,
-    startDate,
-    salary,
-  } = value;
+  const { error, value } = employeeSchema.validate(req.body, { abortEarly: true });
+  if (error) return res.status(400).json({ message: error.details[0].message });
 
   const employeeCode = generateEmployeeCode();
 
   try {
-    const result = await pool.query(
-      `
-      INSERT INTO employees (
-        employee_code,
-        first_name,
-        last_name,
-        email,
-        phone,
-        city,
-        district,
-        province,
-        ward,
-        PAN,
-        citizenship_no,
-        job_title,
-        department,
-        dob,
-        start_date,
-        salary
-      )
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)
-      RETURNING employee_code
-      `,
-      [
-        employeeCode,
-        firstName,
-        lastName,
-        email,
-        phone,
-        city,
-        district,
-        province,
-        ward,
-        PAN,
-        citizenshipNo,
-        jobTitle,
-        department,
-        dob,
-        startDate,
-        salary,
-      ]
-    );
+    const employee = await prisma.employees.create({
+      data: {
+        employee_code: employeeCode,
+        first_name: value.firstName,
+        last_name: value.lastName,
+        email: value.email,
+        phone: value.phone,
+        city: value.city,
+        district: value.district,
+        province: value.province,
+        ward: value.ward,
+        PAN: value.PAN,
+        citizenship_no: value.citizenshipNo,
+        job_title: value.jobTitle,
+        department: value.department,
+        dob: new Date(value.dob),
+        start_date: new Date(value.startDate),
+        salary: value.salary,
+      },
+    });
 
     res.status(201).json({
       message: "Employee created",
-      employeeCode: result.rows[0].employee_code,
+      employeeCode: employee.employee_code,
     });
   } catch (err) {
-    if (err.code === "23505") {
-      return res.status(409).json({
-        message: "Email already exists",
-      });
+    if (err.code === "P2002") {
+      // Prisma unique constraint error
+      return res.status(409).json({ message: "Email already exists" });
     }
 
     console.error(err);
     res.status(500).json({ error: "Server error" });
   }
 });
-//get emp details
+
+// Get all employees
 router.get("/employees", async (req, res) => {
   try {
-    const result = await pool.query(`
-      SELECT
-        id,
-        employee_code,
-        first_name,
-        last_name,
-        email,
-        phone,
-        city,
-        district,
-        province,
-        ward,
-        job_title,
-        department,
-        salary,
-        dob,
-        start_date,
-        created_at
-      FROM employees
-      ORDER BY created_at DESC
-    `);
+    const employees = await prisma.employees.findMany({
+      orderBy: { created_at: "desc" },
+    });
 
     res.status(200).json({
       message: "Employees retrieved successfully",
-      employees: result.rows,
+      employees,
     });
   } catch (err) {
     console.error(err);

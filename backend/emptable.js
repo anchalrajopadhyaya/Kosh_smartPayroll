@@ -1,40 +1,40 @@
-import { PrismaClient } from '@prisma/client';
+// import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
+// const prisma = new PrismaClient();
 
-const createEmployeeTable = `
-CREATE TABLE IF NOT EXISTS employees (
-  id SERIAL PRIMARY KEY,
-  employee_code VARCHAR(20) UNIQUE NOT NULL,
-  first_name VARCHAR(50),
-  last_name VARCHAR(50),
-  email VARCHAR(100) UNIQUE,
-  phone VARCHAR(20),
-  city VARCHAR(50),
-  district VARCHAR(50),
-  province VARCHAR(50),
-  ward VARCHAR(10),
-  PAN VARCHAR(20),
-  citizenship_no VARCHAR(50),
-  job_title VARCHAR(100),
-  department VARCHAR(50),
-  dob DATE,
-  start_date DATE,
-  salary NUMERIC(10,2),
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-`;
+// const createEmployeeTable = `
+// CREATE TABLE IF NOT EXISTS employees (
+//   id SERIAL PRIMARY KEY,
+//   employee_code VARCHAR(20) UNIQUE NOT NULL,
+//   first_name VARCHAR(50),
+//   last_name VARCHAR(50),
+//   email VARCHAR(100) UNIQUE,
+//   phone VARCHAR(20),
+//   city VARCHAR(50),
+//   district VARCHAR(50),
+//   province VARCHAR(50),
+//   ward VARCHAR(10),
+//   PAN VARCHAR(20),
+//   citizenship_no VARCHAR(50),
+//   job_title VARCHAR(100),
+//   department VARCHAR(50),
+//   dob DATE,
+//   start_date DATE,
+//   salary NUMERIC(10,2),
+//   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+// );
+// `;
 
-async function emp() {
-  try {
-    await client1.connect();
-    await client1.query(createEmployeeTable);
-    console.log("Employees table ready");
-  } catch (err) {
-    console.error("Error:", err.message);
-  } finally {
-    await client1.end();
-  }
-}
+// async function emp() {
+//   try {
+//     await client1.connect();
+//     await client1.query(createEmployeeTable);
+//     console.log("Employees table ready");
+//   } catch (err) {
+//     console.error("Error:", err.message);
+//   } finally {
+//     await client1.end();
+//   }
+// }
 
-emp();
+// emp();
