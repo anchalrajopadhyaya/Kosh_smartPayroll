@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { PrismaClient } = require("@prisma/client");
+const { PrismaClient } = require("@prisma/config");
 const { employeeSchema } = require("./employee_validator");
 
 const prisma = new PrismaClient();

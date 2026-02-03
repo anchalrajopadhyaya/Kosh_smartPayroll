@@ -102,7 +102,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                           ),
                         ),
                         onPressed: () {
-                          // Call your backend API to send reset email
+                          // Call to reset email
                           //sendResetPasswordEmail(emailController.text);
 
                           // Show confirmation
