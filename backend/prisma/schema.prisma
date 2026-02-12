@@ -1,0 +1,38 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model employees {
+  id             Int       @id @default(autoincrement())
+  employee_code  String    @unique @db.VarChar(20)
+  first_name     String?   @db.VarChar(50)
+  last_name      String?   @db.VarChar(50)
+  email          String?   @unique @db.VarChar(100)
+  phone          String?   @db.VarChar(20)
+  city           String?   @db.VarChar(50)
+  district       String?   @db.VarChar(50)
+  province       String?   @db.VarChar(50)
+  ward           String?   @db.VarChar(10)
+  pan            String?   @db.VarChar(20)
+  citizenship_no String?   @db.VarChar(20)
+  job_title      String?   @db.VarChar(100)
+  department     String?   @db.VarChar(50)
+  dob            DateTime? @db.Date
+  start_date     DateTime? @db.Date
+  salary         Decimal?  @db.Decimal(10, 2)
+  created_at     DateTime? @default(now()) @db.Timestamp(6)
+  password       String?   @db.VarChar(255)
+}
+
+model users {
+  id       Int     @id @default(autoincrement())
+  name     String? @db.VarChar(50)
+  email    String? @unique @db.VarChar(100)
+  password String? @db.VarChar(100)
+  role     String? @default("hr") @db.VarChar(50)
+}

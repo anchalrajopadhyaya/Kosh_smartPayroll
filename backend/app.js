@@ -1,36 +1,27 @@
 const express = require("express");
 const cors = require("cors");
 const bcrypt = require("bcrypt");
-const pool = require("./db");
+const prisma = require("./prisma");
 const { loginSchema } = require("./routes/employee_validator");
+const { validate } = require("./middleware/validation");
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 
-// Universal Login (checks both users and employees tables)
-app.post("/login", async (req, res) => {
-  // Validate input
-  const { error, value } = loginSchema.validate(req.body);
-  if (error) {
-    return res.status(400).json({
-      message: error.details[0].message
-    });
-  }
-
-  const { email, password } = value;
+// Universal Login (checks both users and employees tables) - Using middleware
+app.post("/login", validate(loginSchema), async (req, res) => {
+  const { email, password } = req.body; // Already validated by middleware
 
   try {
     // First, check if user is an HR user (in users table)
-    const hrResult = await pool.query(
-      "SELECT id, name, email, password, role FROM users WHERE email = $1",
-      [email]
-    );
+    const hrUser = await prisma.users.findUnique({
+      where: { email },
+    });
 
-    if (hrResult.rows.length > 0) {
+    if (hrUser) {
       // User found in users (HR) table
-      const hrUser = hrResult.rows[0];
       const isPasswordValid = await bcrypt.compare(password, hrUser.password);
 
       if (!isPasswordValid) {
@@ -53,14 +44,12 @@ app.post("/login", async (req, res) => {
     }
 
     // If not HR, check if user is an Employee
-    const empResult = await pool.query(
-      "SELECT id, employee_code, first_name, last_name, email, password, job_title, department, salary FROM employees WHERE email = $1",
-      [email]
-    );
+    const employee = await prisma.employees.findUnique({
+      where: { email },
+    });
 
-    if (empResult.rows.length > 0) {
+    if (employee) {
       // User found in Employee table
-      const employee = empResult.rows[0];
       const isPasswordValid = await bcrypt.compare(password, employee.password);
 
       if (!isPasswordValid) {

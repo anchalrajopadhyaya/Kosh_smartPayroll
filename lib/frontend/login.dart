@@ -1,8 +1,9 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:payroll/frontend/state/statemngNav.dart';
 import 'hr_dashboard.dart';
-import 'dashboard.dart';
+import 'employee/dashboard.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -76,7 +77,8 @@ class _LoginScreenState extends State<LoginScreen> {
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(
-                builder: (_) => EmployeeDashboard(userData: userData),
+                // builder: (_) => EmployeeDashboard(userData: userData),
+                builder: (_) => HomeScreen(userData: userData),
               ),
             );
           } else {

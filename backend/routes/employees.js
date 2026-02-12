@@ -1,8 +1,9 @@
 const express = require("express");
 const router = express.Router();
-const pool = require("../db");
+const prisma = require("../prisma");
 const bcrypt = require("bcrypt");
 const { employeeSchema } = require("./employee_validator");
+const { validate } = require("../middleware/validation");
 
 // Generate employee code
 function generateEmployeeCode() {
@@ -11,18 +12,8 @@ function generateEmployeeCode() {
   return `EMP-${year}-${random}`;
 }
 
-// Create new employee
-router.post("/employees", async (req, res) => {
-  const { error, value } = employeeSchema.validate(req.body, {
-    abortEarly: true,
-  });
-
-  if (error) {
-    return res.status(400).json({
-      message: error.details[0].message,
-    });
-  }
-
+// Create new employee - Using middleware for validation
+router.post("/employees", validate(employeeSchema), async (req, res) => {
   const {
     firstName,
     lastName,
@@ -40,65 +31,43 @@ router.post("/employees", async (req, res) => {
     startDate,
     password,
     salary,
-  } = value;
+  } = req.body; //validated by middleware
 
   const employeeCode = generateEmployeeCode();
 
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
-    const result = await pool.query(
-      `
-      INSERT INTO employees (
-        employee_code,
-        first_name,
-        last_name,
-        email,
-        phone,
-        city,
-        district,
-        province,
-        ward,
-        PAN,
-        citizenship_no,
-        job_title,
-        department,
-        dob,
-        start_date,
-        password,
-        salary
-      )
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)
-      RETURNING employee_code
-      `,
-      [
-        employeeCode,
-        firstName,
-        lastName,
-        email,
-        phone,
-        city,
-        district,
-        province,
-        ward,
-        PAN,
-        citizenshipNo,
-        jobTitle,
-        department,
-        dob,
-        startDate,
-        hashedPassword,
-        salary,
-      ]
-    );
+
+    const newEmployee = await prisma.employees.create({
+      data: {
+        employee_code: employeeCode,
+        first_name: firstName,
+        last_name: lastName,
+        email: email,
+        phone: phone,
+        city: city,
+        district: district,
+        province: province,
+        ward: ward.toString(), 
+        pan: PAN,
+        citizenship_no: citizenshipNo,
+        job_title: jobTitle,
+        department: department,
+        dob: new Date(dob),
+        start_date: new Date(startDate),
+        password: hashedPassword,
+        salary: salary,
+      }
+    });
 
     res.status(201).json({
       message: "Employee created",
-      employeeCode: result.rows[0].employee_code,
+      employeeCode: newEmployee.employee_code,
     });
   } catch (err) {
-    if (err.code === "23505") {
+    if (err.code === "P2002") { // Prisma unique constraint violation code
       return res.status(409).json({
-        message: "Email already exists",
+        message: "Email or other unique field already exists",
       });
     }
 
@@ -106,34 +75,37 @@ router.post("/employees", async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 });
-//get emp details
+
+// Get employee details
 router.get("/employees", async (req, res) => {
   try {
-    const result = await pool.query(`
-      SELECT
-        id,
-        employee_code,
-        first_name,
-        last_name,
-        email,
-        phone,
-        city,
-        district,
-        province,
-        ward,
-        job_title,
-        department,
-        salary,
-        dob,
-        start_date,
-        created_at
-      FROM employees
-      ORDER BY created_at DESC
-    `);
+    const employees = await prisma.employees.findMany({
+      orderBy: {
+        created_at: 'desc',
+      },
+      select: {
+        id: true,
+        employee_code: true,
+        first_name: true,
+        last_name: true,
+        email: true,
+        phone: true,
+        city: true,
+        district: true,
+        province: true,
+        ward: true,
+        job_title: true,
+        department: true,
+        salary: true,
+        dob: true,
+        start_date: true,
+        created_at: true,
+      }
+    });
 
     res.status(200).json({
       message: "Employees retrieved successfully",
-      employees: result.rows,
+      employees: employees,
     });
   } catch (err) {
     console.error(err);

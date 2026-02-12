@@ -12,7 +12,7 @@ class notification extends StatelessWidget {
           style: TextStyle(color: Colors.white),
         ),
 
-        backgroundColor: Colors.blue.shade600,
+        backgroundColor: const Color(0xFF188984),
       ),
       body: Container(
         color: const Color(0x1E8AE7FF),
@@ -56,7 +56,10 @@ class NotificationCard extends StatelessWidget {
       margin: const EdgeInsets.symmetric(vertical: 8),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: ListTile(
-        leading: const Icon(Icons.notifications, color: Colors.blue),
+        leading: const Icon(
+          Icons.notifications,
+          color: const Color(0xFF188984),
+        ),
         title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
         subtitle: Text(description),
         trailing: const Icon(Icons.arrow_forward_ios, size: 16),
