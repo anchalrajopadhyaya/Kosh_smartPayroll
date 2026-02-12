@@ -54,7 +54,7 @@ Thumbs.db
 
 # Build output
 dist/
-build/
+**/build/
 .dart_tool/
 .packages
 .pub-cache/
