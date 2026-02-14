@@ -1,7 +1,8 @@
+require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const bcrypt = require("bcrypt");
-const prisma = require("./prisma");
+const prisma = require("./prismaClient");
 const { loginSchema } = require("./routes/employee_validator");
 const { validate } = require("./middleware/validation");
 
@@ -33,7 +34,7 @@ app.post("/login", validate(loginSchema), async (req, res) => {
       // Return HR user data
       return res.status(200).json({
         message: "Login successful",
-        userType: "hr", // Important: identifies user type
+        userType: "hr", //usertype
         user: {
           id: hrUser.id,
           name: hrUser.name,
@@ -43,13 +44,12 @@ app.post("/login", validate(loginSchema), async (req, res) => {
       });
     }
 
-    // If not HR, check if user is an Employee
     const employee = await prisma.employees.findUnique({
       where: { email },
     });
 
     if (employee) {
-      // User found in Employee table
+      //Employee table user
       const isPasswordValid = await bcrypt.compare(password, employee.password);
 
       if (!isPasswordValid) {
@@ -90,6 +90,10 @@ app.post("/login", validate(loginSchema), async (req, res) => {
 // Employees routes
 const employeeRoutes = require("./routes/employees");
 app.use("/api", employeeRoutes);
+
+// Attendance routes
+const attendanceRoutes = require("./routes/attendance");
+app.use("/api/attendance", attendanceRoutes);
 
 // Test route
 app.get("/", (req, res) => {

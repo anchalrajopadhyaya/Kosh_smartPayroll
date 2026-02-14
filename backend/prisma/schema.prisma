@@ -1,6 +1,6 @@
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider = "prisma-client-js"
+  // output   = "../generated/prisma"
 }
 
 datasource db {
@@ -27,6 +27,18 @@ model employees {
   salary         Decimal?  @db.Decimal(10, 2)
   created_at     DateTime? @default(now()) @db.Timestamp(6)
   password       String?   @db.VarChar(255)
+  attendance     attendance[]
+}
+
+model attendance {
+  id          Int      @id @default(autoincrement())
+  employee_id Int
+  date        DateTime @db.Date
+  time        String   @db.VarChar(10)
+  location    String?  @db.VarChar(255)
+  created_at  DateTime @default(now()) @db.Timestamp(6)
+
+  employee    employees @relation(fields: [employee_id], references: [id])
 }
 
 model users {

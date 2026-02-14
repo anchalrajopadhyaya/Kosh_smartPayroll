@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import '../attendance.dart';
-import 'dashboard.dart';
 
 class Nav extends StatelessWidget {
   final int currentIndex;
