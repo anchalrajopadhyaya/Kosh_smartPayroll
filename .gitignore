@@ -1,5 +1,5 @@
-# build/
-**/build/
+build/
+# **/build/
 
 # Environment variables
 .env
@@ -29,6 +29,10 @@ jspm_packages/
 .npm
 
 
+# Android
+android/.gradle/
+android/app/build/
+
 # dotenv environment variable files
 .env
 .env.development.local
@@ -49,6 +53,11 @@ prisma/migrations/dev.db-journal
 *.swo
 *~
 
+# APK / IPA
+*.apk
+*.aab
+*.ipa
+
 # OS
 .DS_Store
 Thumbs.db
@@ -56,6 +65,14 @@ Thumbs.db
 # Build output
 dist/
 **/build/
+.dart_tool/
+.packages
+.pub-cache/
+.pub/
+
+# Flutter
+.flutter-plugins
+.flutter-plugins-dependencies
 .dart_tool/
 .packages
 .pub-cache/
