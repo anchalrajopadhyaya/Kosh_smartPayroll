@@ -77,3 +77,10 @@ dist/
 .packages
 .pub-cache/
 .pub/
+# Gradle cache
+.gradle/
+
+
+# Android specific
+android/.gradle/
+android/app/build/
