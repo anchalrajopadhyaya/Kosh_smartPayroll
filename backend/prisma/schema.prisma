@@ -36,7 +36,8 @@ model attendance {
   date        DateTime @db.Date
   time        String   @db.VarChar(10)
   location    String?  @db.VarChar(255)
-  created_at  DateTime @default(now()) @db.Timestamp(6)
+  location_name String? @db.VarChar(255)
+  distance    Decimal? @db.Decimal(10, 4)
 
   employee    employees @relation(fields: [employee_id], references: [id])
 }

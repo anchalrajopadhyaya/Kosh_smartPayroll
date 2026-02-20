@@ -22,10 +22,10 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _screens = [
-      EmployeeDashboard(userData: widget.userData), // Dashboard -> index 0
+      EmployeeDashboard(userData: widget.userData),
       const Center(child: Text("Payslips Screen")),
       const AttendanceContent(),
-      ProfileScreen(userData: widget.userData), // Profile -> index 3
+      ProfileScreen(userData: widget.userData),
     ];
   }
 
