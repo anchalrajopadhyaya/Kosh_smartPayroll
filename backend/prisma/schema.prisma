@@ -34,7 +34,15 @@ model attendance {
   id          Int      @id @default(autoincrement())
   employee_id Int
   date        DateTime @db.Date
-  time        String   @db.VarChar(10)
+  punch_in_time        String?   @db.VarChar(10)
+  punch_out_time       String?   @db.VarChar(10)
+  punch_in_location   String?   @db.VarChar(255)
+  punch_out_location  String?   @db.VarChar(255)
+  punch_in_location_name   String?   @db.VarChar(255)
+  punch_out_location_name  String?   @db.VarChar(255)
+  
+  punch_in_distance   Decimal?  @db.Decimal(10, 4)
+  punch_out_distance  Decimal?  @db.Decimal(10, 4)
   location    String?  @db.VarChar(255)
   location_name String? @db.VarChar(255)
   distance    Decimal? @db.Decimal(10, 4)

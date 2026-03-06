@@ -24,7 +24,7 @@ class _HomeScreenState extends State<HomeScreen> {
     _screens = [
       EmployeeDashboard(userData: widget.userData),
       const Center(child: Text("Payslips Screen")),
-      const AttendanceContent(),
+      AttendanceContent(userData: widget.userData),
       ProfileScreen(userData: widget.userData),
     ];
   }

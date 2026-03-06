@@ -4,10 +4,11 @@ lat1 - Latitude of point 1
 lon1 - Longitude of point 1
 lat2 - Latitude of point 2
 lon2- Longitude of point 2
+
 and it returns Distance in kilometers
 */
 function calculateHaversineDistance(lat1, lon1, lat2, lon2) {
-  const R = 6371; // Earth's radius in kilometers
+  const R = 6371; //Earth radius in kilometers
   const dLat = (lat2 - lat1) * (Math.PI / 180);
   const dLon = (lon2 - lon1) * (Math.PI / 180);
   const a =
@@ -16,12 +17,14 @@ function calculateHaversineDistance(lat1, lon1, lat2, lon2) {
       Math.cos(lat2 * (Math.PI / 180)) *
       Math.sin(dLon / 2) *
       Math.sin(dLon / 2);
+  //angular dist in radians
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  //dist in km
   return R * c;
 }
 
 /*
- Checks if a user is within a certain radius of a center location.
+ Checks if a user is within a certain radius
  returns distance, isInside, extraDistance
  */
 function checkLocation(userLat, userLon, centerLat, centerLon, radiusKm = 0.5) {
@@ -48,7 +51,7 @@ async function getLocationName(lat, lon) {
         const data = await response.json();
         return data.display_name || "Unknown Location";
     } catch (error) {
-        console.error("Geocoding error:", error);
+        console.error("Geocoding error:", error); //updating 
         return "Unknown Location";
     }
 }

@@ -14,6 +14,40 @@ class EmployeeDashboard extends StatefulWidget {
 
 class EmployeeDashboardState extends State<EmployeeDashboard> {
   bool _isLoading = false;
+  String _status = 'PUNCHED_OUT'; // Default status
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchAttendanceStatus();
+  }
+
+  Future<void> _fetchAttendanceStatus() async {
+    try {
+      final response = await http.get(
+        Uri.parse(
+          'http://10.0.2.2:3000/api/attendance/status/${widget.userData['id']}',
+        ),
+      );
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        setState(() {
+          _status = data['status'];
+        });
+      }
+    } catch (e) {
+      print('Error fetching status: $e');
+    }
+  }
+
+  Future<void> _handlePunchAction() async {
+    if (_status == 'PUNCHED_IN') {
+      await _handlePunchOut();
+    } else {
+      await _handlePunchIn();
+    }
+  }
+
   Future<void> _handlePunchIn() async {
     setState(() => _isLoading = true);
     try {
@@ -47,10 +81,59 @@ class EmployeeDashboardState extends State<EmployeeDashboard> {
         }),
       );
       if (response.statusCode == 201) {
+        setState(() {
+          _status = 'PUNCHED_IN';
+        });
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Punch In Successful!'),
             backgroundColor: Colors.green,
+          ),
+        );
+      } else {
+        throw 'Failed: ${response.body}';
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+      );
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _handlePunchOut() async {
+    setState(() => _isLoading = true);
+    try {
+      // 1. Get Location
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+      // 2. Prepare Data
+      final String locationString =
+          "${position.latitude}, ${position.longitude}";
+      final DateTime now = DateTime.now();
+      final String date = DateFormat('yyyy-MM-dd').format(now);
+      final String time = DateFormat('HH:mm').format(now);
+      // 3. Send to Backend
+      final response = await http.post(
+        Uri.parse('http://10.0.2.2:3000/api/attendance/punch-out'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'employeeId': widget.userData['id'],
+          'location': locationString,
+          'date': date,
+          'time': time,
+        }),
+      );
+      if (response.statusCode == 200) {
+        setState(() {
+          _status = 'PUNCHED_OUT';
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Punch Out Successful!'),
+            backgroundColor: Colors.orange,
           ),
         );
       } else {
@@ -94,12 +177,12 @@ class EmployeeDashboardState extends State<EmployeeDashboard> {
 
             const SizedBox(height: 24),
 
-            // PUNCH IN BUTTON
+            // DYNAMIC PUNCH BUTTON
             SizedBox(
               width: double.infinity,
               height: 60,
               child: ElevatedButton.icon(
-                onPressed: _isLoading ? null : _handlePunchIn,
+                onPressed: _isLoading ? null : _handlePunchAction,
                 icon:
                     _isLoading
                         ? const SizedBox(
@@ -110,16 +193,26 @@ class EmployeeDashboardState extends State<EmployeeDashboard> {
                             strokeWidth: 2,
                           ),
                         )
-                        : const Icon(Icons.fingerprint, size: 28),
+                        : Icon(
+                          _status == 'PUNCHED_IN'
+                              ? Icons.logout
+                              : Icons.fingerprint,
+                          size: 28,
+                        ),
                 label: Text(
-                  _isLoading ? "Processing..." : "PUNCH IN",
+                  _isLoading
+                      ? "Processing..."
+                      : (_status == 'PUNCHED_IN' ? "PUNCH OUT" : "PUNCH IN"),
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF188984),
+                  backgroundColor:
+                      _status == 'PUNCHED_IN'
+                          ? Colors.orange.shade700
+                          : const Color(0xFF188984),
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(15),
