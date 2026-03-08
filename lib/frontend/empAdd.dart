@@ -334,6 +334,8 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
       "district": district.text.trim(),
       "province": province.text.trim(),
       "ward": ward.text.trim(),
+      "PAN": PAN.text.trim(),
+      "citizenshipNo": citizenshipNo.text.trim(),
       "jobTitle": jobTitle.text.trim(),
       "department": department,
       "dob": dob?.toIso8601String(),
