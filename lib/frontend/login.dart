@@ -62,13 +62,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
           // Navigate based on user type
           if (userType == 'hr') {
-            // Navigate to HR Dashboard
+            // Navigate to HR Dashboard with navigation bar
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(
-                builder:
-                    (_) =>
-                        HrDashboardScreen(userName: userData['name'] ?? 'User'),
+                builder: (_) => HrHomeScreen(userData: userData),
               ),
             );
           } else if (userType == 'employee') {

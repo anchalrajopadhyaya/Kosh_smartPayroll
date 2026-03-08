@@ -160,4 +160,29 @@ router.get('/history/:employeeId', async (req, res) => {
     }
 });
 
+// Get All Attendance (for HR)
+router.get('/all', async (req, res) => {
+    try {
+        const allAttendance = await prisma.attendance.findMany({
+            include: {
+                employee: {
+                    select: {
+                        first_name: true,
+                        last_name: true,
+                    }
+                }
+            },
+            orderBy: [
+                { date: 'desc' },
+                { id: 'desc' }
+            ],
+        });
+
+        res.status(200).json(allAttendance);
+    } catch (error) {
+        console.error('Fetch all attendance error:', error);
+        res.status(500).json({ message: 'Server error fetching all attendance' });
+    }
+});
+
 module.exports = router;
