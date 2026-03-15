@@ -58,42 +58,44 @@ router.post('/punch-in', async (req, res) => {
 
 router.post('/punch-out', async (req, res) => {
     const { employeeId, location, date, time } = req.body;
-    if(!employeeId || !date || !time) {
+    if (!employeeId || !date || !time) {
         return res.status(400).json({ message: 'Missing required fields' });
     }
 
-    try{
+    try {
         //finding latest attendance for this employee
         const latestAttendance = await prisma.attendance.findFirst({
-            where: { employee_id: employeeId,
+            where: {
+                employee_id: employeeId,
                 date: new Date(date),
-                punch_out_time:null},
+                punch_out_time: null
+            },
             orderBy: { date: 'desc' },
         });
 
-        if(!latestAttendance) {
-            return res.status(404).json({message: "no active punch in found for today"});
-    }
+        if (!latestAttendance) {
+            return res.status(404).json({ message: "no active punch in found for today" });
+        }
 
         //Calculate proximity
         let locationResult = { distance: null, isInside: null };
         let locationName = "Unknown";
 
-        if(location){
+        if (location) {
             const [latStr, lonStr] = location.split(',');
             const userLat = parseFloat(latStr.trim());
             const userLon = parseFloat(lonStr.trim());
-            if(!isNaN(userLat) && !isNaN(userLon)){
+            if (!isNaN(userLat) && !isNaN(userLon)) {
                 locationResult = checkLocation(userLat, userLon, CENTER_LAT, CENTER_LON, RADIUS_KM);
 
-                const{getLocationName} = require('../geo');
+                const { getLocationName } = require('../geo');
                 locationName = await getLocationName(userLat, userLon);
             }
         }
 
         //Update the record
         const updateAttendance = await prisma.attendance.update({
-            where: {id: latestAttendance.id},
+            where: { id: latestAttendance.id },
             data: {
                 punch_out_time: time,
                 punch_out_location: location,
@@ -103,39 +105,39 @@ router.post('/punch-out', async (req, res) => {
         });
         res.status(200).json({
             message: locationResult.isInside
-                ? `Punch out successful at ${locationName} (In Range)`:
+                ? `Punch out successful at ${locationName} (In Range)` :
                 `Punch out successful at ${locationName} (Out of Range)`,
             attendance: updateAttendance,
             proximity: locationResult
         });
-    }catch(error){
+    } catch (error) {
         console.error('Punch out error:', error);
-        res.status(500).json({message: 'Server error during punch out'});
-    } 
+        res.status(500).json({ message: 'Server error during punch out' });
+    }
 });
 
 //Get today's attendance 
 router.get('/status/:employeeId', async (req, res) => {
     const { employeeId } = req.params;
     const today = new Date();
-    today.setHours(0,0,0,0);
+    today.setHours(0, 0, 0, 0);
 
-    try{
+    try {
         const attendance = await prisma.attendance.findFirst({
             where: {
                 employee_id: parseInt(employeeId),
                 date: today,
             },
-            orderBy: { date: 'desc' },
+            orderBy: { punch_in_time: 'desc' },
         });
-        if(!attendance){
-            return res.status(200).json({ status: 'Punched_Out', attendance: null});
+        if (!attendance) {
+            return res.status(200).json({ status: 'Punched_Out', attendance: null });
         }
 
-        if(attendance.punch_out_time){
-            return res.status(200).json({ status: 'Punched_Out', attendance: attendance});
+        if (attendance.punch_out_time) {
+            return res.status(200).json({ status: 'Punched_Out', attendance: attendance });
         }
-        return res.status(200).json({ status: 'Punched_In', attendance: attendance});
+        return res.status(200).json({ status: 'Punched_In', attendance: attendance });
     } catch (error) {
         console.error('Fetch status error:', error);
         res.status(500).json({ message: 'Server error fetching attendance status' });
@@ -160,28 +162,54 @@ router.get('/history/:employeeId', async (req, res) => {
     }
 });
 
-// Get All Attendance (for HR)
-router.get('/all', async (req, res) => {
+// Get Daily Attendance Report (All employees + their status for a specific date)
+router.get('/daily', async (req, res) => {
+    const { date } = req.query; // YYYY-MM-DD
+    if (!date) return res.status(400).json({ message: 'Date is required' });
+
     try {
-        const allAttendance = await prisma.attendance.findMany({
-            include: {
-                employee: {
-                    select: {
-                        first_name: true,
-                        last_name: true,
-                    }
-                }
+        const queryDate = new Date(date);
+        queryDate.setHours(0, 0, 0, 0);
+
+        // 1. Get all employees
+        const employees = await prisma.employees.findMany({
+            select: {
+                id: true,
+                first_name: true,
+                last_name: true,
+                job_title: true,
+                department: true,
             },
-            orderBy: [
-                { date: 'desc' },
-                { id: 'desc' }
-            ],
+            orderBy: { first_name: 'asc' }
         });
 
-        res.status(200).json(allAttendance);
+        // 2. Get attendance logs for that specific date
+        const attendanceLogs = await prisma.attendance.findMany({
+            where: { date: queryDate }
+        });
+
+        // 3. Merge data
+        const report = employees.map(emp => {
+            const log = attendanceLogs.find(log => log.employee_id === emp.id);
+            return {
+                id: emp.id,
+                first_name: emp.first_name,
+                last_name: emp.last_name,
+                job_title: emp.job_title,
+                department: emp.department,
+                status: log ? (log.punch_out_time ? 'Present' : 'Logged In') : 'Absent',
+                punch_in_time: log ? log.punch_in_time : null,
+                punch_out_time: log ? log.punch_out_time : null,
+                attendance_id: log ? log.id : null,
+                // Include full log data for the detail dialog
+                logData: log || null
+            };
+        });
+
+        res.status(200).json(report);
     } catch (error) {
-        console.error('Fetch all attendance error:', error);
-        res.status(500).json({ message: 'Server error fetching all attendance' });
+        console.error('Daily report error:', error);
+        res.status(500).json({ message: 'Server error generating daily report' });
     }
 });
 

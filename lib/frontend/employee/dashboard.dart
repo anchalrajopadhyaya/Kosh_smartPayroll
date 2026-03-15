@@ -14,7 +14,7 @@ class EmployeeDashboard extends StatefulWidget {
 
 class EmployeeDashboardState extends State<EmployeeDashboard> {
   bool _isLoading = false;
-  String _status = 'PUNCHED_OUT'; // Default status
+  String _status = 'PUNCHED_OUT';
 
   @override
   void initState() {
@@ -51,7 +51,7 @@ class EmployeeDashboardState extends State<EmployeeDashboard> {
   Future<void> _handlePunchIn() async {
     setState(() => _isLoading = true);
     try {
-      // 1. Check permissions
+      // Check permissions
       LocationPermission permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
@@ -59,11 +59,11 @@ class EmployeeDashboardState extends State<EmployeeDashboard> {
           throw 'Location permissions are denied';
         }
       }
-      // 2. Get Location
+      // Get Location
       Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
       );
-      // 3. Prepare Data
+
       final String locationString =
           "${position.latitude}, ${position.longitude}";
       final DateTime now = DateTime.now();
@@ -105,17 +105,16 @@ class EmployeeDashboardState extends State<EmployeeDashboard> {
   Future<void> _handlePunchOut() async {
     setState(() => _isLoading = true);
     try {
-      // 1. Get Location
       Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
       );
-      // 2. Prepare Data
+
       final String locationString =
           "${position.latitude}, ${position.longitude}";
       final DateTime now = DateTime.now();
       final String date = DateFormat('yyyy-MM-dd').format(now);
       final String time = DateFormat('HH:mm').format(now);
-      // 3. Send to Backend
+
       final response = await http.post(
         Uri.parse('http://10.0.2.2:3000/api/attendance/punch-out'),
         headers: {'Content-Type': 'application/json'},
@@ -177,7 +176,7 @@ class EmployeeDashboardState extends State<EmployeeDashboard> {
 
             const SizedBox(height: 24),
 
-            // DYNAMIC PUNCH BUTTON
+            //DYNAMIC PUNCH BUTTON
             SizedBox(
               width: double.infinity,
               height: 60,
@@ -244,7 +243,6 @@ class EmployeeDashboardState extends State<EmployeeDashboard> {
     );
   }
 
-  // ... (Helper methods: _buildSalaryCard, _leaveBox, etc. would be roughly same as before or refactored)
   Widget _buildSalaryCard() {
     return Container(
       padding: const EdgeInsets.all(20),
