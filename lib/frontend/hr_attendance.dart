@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:intl/intl.dart';
-import 'package:payroll/frontend/widgets/attendance_details.dart';
-import 'package:payroll/frontend/attendance.dart';
+import 'package:payroll/frontend/user_attendance_list.dart';
 
 class HrAttendanceScreen extends StatefulWidget {
   const HrAttendanceScreen({super.key});
@@ -166,8 +165,53 @@ class _HrAttendanceScreenState extends State<HrAttendanceScreen> {
       ),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        onTap:
-            isAbsent ? null : () => showDetailsDialog(context, item['logData']),
+        onTap: () {
+          showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            backgroundColor: Colors.transparent,
+            builder:
+                (context) => Container(
+                  height: MediaQuery.of(context).size.height * 0.85,
+                  decoration: const BoxDecoration(
+                    color: Color(0xfff4f6f9),
+                    borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(20),
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: const BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.vertical(
+                            top: Radius.circular(20),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              "$fullName's History",
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                              ),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.close),
+                              onPressed: () => Navigator.pop(context),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Expanded(child: UserAttendanceList(userId: item['id'])),
+                    ],
+                  ),
+                ),
+          );
+        },
         leading: CircleAvatar(
           backgroundColor:
               isAbsent

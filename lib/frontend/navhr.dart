@@ -16,20 +16,39 @@ class HrNav extends StatelessWidget {
       currentIndex: currentIndex,
       onTap: onTabSelected,
       type: BottomNavigationBarType.fixed,
-      selectedItemColor: const Color(0xFF188984),
+      selectedItemColor: const Color(0xFFFBA826),
       unselectedItemColor: Colors.grey,
-      elevation: 12,
+      backgroundColor: Colors.white,
+      selectedLabelStyle: const TextStyle(
+        fontWeight: FontWeight.bold,
+        fontSize: 11,
+      ),
+      unselectedLabelStyle: const TextStyle(
+        fontWeight: FontWeight.normal,
+        fontSize: 11,
+      ),
+      elevation: 20,
       items: const [
         BottomNavigationBarItem(
-          icon: Icon(Icons.dashboard),
-          label: 'Dashboard',
+          icon: Icon(Icons.grid_view_outlined),
+          activeIcon: Icon(Icons.grid_view),
+          label: 'Home',
         ),
-        BottomNavigationBarItem(icon: Icon(Icons.people), label: 'Employees'),
         BottomNavigationBarItem(
-          icon: Icon(Icons.calendar_today),
-          label: 'Attendance',
+          icon: Icon(Icons.supervisor_account_outlined),
+          activeIcon: Icon(Icons.supervisor_account),
+          label: 'Directory',
         ),
-        BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Settings'),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.payments_outlined),
+          activeIcon: Icon(Icons.payments),
+          label: 'Payroll',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.manage_accounts_outlined),
+          activeIcon: Icon(Icons.manage_accounts),
+          label: 'Settings',
+        ),
       ],
     );
   }

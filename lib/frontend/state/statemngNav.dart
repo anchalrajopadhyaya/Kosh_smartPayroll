@@ -103,13 +103,16 @@ class _HrHomeScreenState extends State<HrHomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(_getAppBarTitle()),
-        backgroundColor: const Color.fromARGB(255, 24, 137, 132),
-        foregroundColor: Colors.white,
-        centerTitle: true,
-        elevation: 0,
-      ),
+      appBar:
+          _currentIndex == 0
+              ? null
+              : AppBar(
+                title: Text(_getAppBarTitle()),
+                backgroundColor: const Color.fromARGB(255, 24, 137, 132),
+                foregroundColor: Colors.white,
+                centerTitle: true,
+                elevation: 0,
+              ),
       body: IndexedStack(index: _currentIndex, children: _screens),
       bottomNavigationBar: HrNav(
         currentIndex: _currentIndex,
