@@ -8,7 +8,7 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xfff4f6f9),
+      backgroundColor: const Color(0xFFEBF1F6),
       appBar: AppBar(
         title: const Text("My Profile", style: TextStyle(color: Colors.black)),
         backgroundColor: Colors.white,
@@ -70,7 +70,6 @@ class ProfileScreen extends StatelessWidget {
                   final prefs = await SharedPreferences.getInstance();
                   await prefs.clear(); // removes all saved data
 
-                  // Navigate to Login screen
                   Navigator.of(context, rootNavigator: true).pushReplacement(
                     MaterialPageRoute(builder: (_) => const LoginScreen()),
                   );

@@ -76,7 +76,7 @@ class _HrAttendanceScreenState extends State<HrAttendanceScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xfff4f6f9),
+      backgroundColor: const Color(0xFFEBF1F6),
       body: Column(
         children: [
           _buildDateHeader(context),
@@ -174,7 +174,7 @@ class _HrAttendanceScreenState extends State<HrAttendanceScreen> {
                 (context) => Container(
                   height: MediaQuery.of(context).size.height * 0.85,
                   decoration: const BoxDecoration(
-                    color: Color(0xfff4f6f9),
+                    color: Color(0xFFEBF1F6),
                     borderRadius: BorderRadius.vertical(
                       top: Radius.circular(20),
                     ),

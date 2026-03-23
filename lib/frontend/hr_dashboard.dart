@@ -14,7 +14,7 @@ class HrDashboardScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFEBF1F6), // Light blueish background
+      backgroundColor: const Color(0xFFEBF1F6),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
@@ -295,19 +295,19 @@ class HrDashboardScreen extends StatelessWidget {
         _buildApprovalItem(
           name: 'Michael Chen',
           type: 'Annual Leave (3 Days)',
-          imageUrl: 'https://randomuser.me/api/portraits/men/32.jpg',
+          // imageUrl:
         ),
         const SizedBox(height: 12),
         _buildApprovalItem(
           name: 'Jessica Davis',
           type: 'Sick Leave (1 Day)',
-          imageUrl: 'https://randomuser.me/api/portraits/women/65.jpg',
+          // imageUrl:
         ),
         const SizedBox(height: 12),
         _buildApprovalItem(
           name: 'Carlos Rodriguez',
           type: 'Profile Update',
-          imageUrl: 'https://randomuser.me/api/portraits/men/86.jpg',
+          // imageUrl:
         ),
       ],
     );
@@ -316,7 +316,7 @@ class HrDashboardScreen extends StatelessWidget {
   Widget _buildApprovalItem({
     required String name,
     required String type,
-    required String imageUrl,
+    // required String imageUrl,
   }) {
     return Container(
       padding: const EdgeInsets.all(12),
@@ -328,7 +328,7 @@ class HrDashboardScreen extends StatelessWidget {
         children: [
           CircleAvatar(
             radius: 20,
-            backgroundImage: NetworkImage(imageUrl),
+            // backgroundImage: NetworkImage(imageUrl),
             backgroundColor: Colors.grey[300],
           ),
           const SizedBox(width: 12),

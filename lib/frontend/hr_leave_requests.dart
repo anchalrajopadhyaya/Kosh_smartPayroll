@@ -26,7 +26,7 @@ class _HrLeaveRequestsScreenState extends State<HrLeaveRequestsScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F6F9),
+      backgroundColor: const Color(0xFFEBF1F6),
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -70,7 +70,7 @@ class _HrLeaveRequestsScreenState extends State<HrLeaveRequestsScreen>
           Container(
             padding: const EdgeInsets.all(8),
             decoration: const BoxDecoration(
-              color: Color(0xFFE8EEF8),
+              color: Colors.white,
               shape: BoxShape.circle,
             ),
             child: const Icon(Icons.tune, color: Color(0xFF141A29), size: 20),
@@ -93,7 +93,7 @@ class _HrLeaveRequestsScreenState extends State<HrLeaveRequestsScreen>
           fontWeight: FontWeight.w500,
           fontSize: 16,
         ),
-        indicatorColor: const Color(0xFF2B60E6),
+        indicatorColor: const Color(0xFFFBA826),
         indicatorWeight: 3,
         dividerColor: Colors.transparent,
         tabs: [
@@ -106,7 +106,7 @@ class _HrLeaveRequestsScreenState extends State<HrLeaveRequestsScreen>
                 Container(
                   padding: const EdgeInsets.all(6),
                   decoration: const BoxDecoration(
-                    color: Color(0xFF2B60E6),
+                    color: Color(0xFFFBA826),
                     shape: BoxShape.circle,
                   ),
                   child: const Text(
@@ -226,13 +226,13 @@ class _HrLeaveRequestsScreenState extends State<HrLeaveRequestsScreen>
                   vertical: 6,
                 ),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFE8EEF8),
+                  color: const Color(0xFF188984).withOpacity(0.1),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
                   leaveType,
                   style: const TextStyle(
-                    color: Color(0xFF1A3B8B),
+                    color: Color(0xFF188984),
                     fontSize: 13,
                     fontWeight: FontWeight.bold,
                   ),
@@ -244,7 +244,7 @@ class _HrLeaveRequestsScreenState extends State<HrLeaveRequestsScreen>
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: const Color(0xFFF4F6F9),
+              color: const Color(0xFFEBF1F6),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Column(
@@ -308,7 +308,7 @@ class _HrLeaveRequestsScreenState extends State<HrLeaveRequestsScreen>
                 child: ElevatedButton(
                   onPressed: () {},
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF2B60E6),
+                    backgroundColor: const Color(0xFF188984),
                     elevation: 0,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
@@ -336,7 +336,7 @@ class _HrLeaveRequestsScreenState extends State<HrLeaveRequestsScreen>
     return BottomNavigationBar(
       currentIndex: 1, // 'Directory' highlighted in image
       type: BottomNavigationBarType.fixed,
-      selectedItemColor: const Color(0xFF2B60E6),
+      selectedItemColor: const Color(0xFFFBA826),
       unselectedItemColor: Colors.grey[500],
       backgroundColor: Colors.white,
       selectedLabelStyle: const TextStyle(

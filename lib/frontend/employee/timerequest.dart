@@ -102,7 +102,7 @@ class _TimeRequestPageState extends State<TimeRequestPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xfff4f6f9),
+      backgroundColor: const Color(0xFFEBF1F6),
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
