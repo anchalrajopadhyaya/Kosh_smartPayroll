@@ -38,7 +38,7 @@ describe('POST /login', () => {
     });
 
     it('should login employee', async () => {
-        const hashedPassword = await bcrypt.hash("password", 10);
+        const hashedPassword = await bcrypt.hash("password123", 10);
 
         await prisma.employees.create({
             data: {

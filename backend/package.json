@@ -5,9 +5,11 @@
   "dependencies": {
     "@prisma/adapter-pg": "^7.4.0",
     "@prisma/client": "^7.4.0",
+    "axios": "^1.13.6",
     "bcrypt": "^6.0.0",
+    "body-parser": "^2.2.2",
     "cors": "^2.8.5",
-    "dotenv": "^17.3.0",
+    "dotenv": "^17.3.1",
     "express": "^5.2.1",
     "joi": "^18.0.2",
     "pg": "^8.18.0",
@@ -34,20 +36,7 @@
   "devDependencies": {
     "@types/node": "^25.2.3",
     "@types/pg": "^8.16.0",
-<<<<<<< HEAD
-    "jest": "^29.7.0",
     "prisma": "^7.4.0",
     "supertest": "^6.3.3"
   }
 }
-=======
-    "jest": "^30.3.0",
-    "prisma": "^7.4.0",
-    "supertest": "^7.2.2"
-  },
-  "directories": {
-    "test": "test"
-  },
-  "description": ""
-}
->>>>>>> 37ba94b27685f3dc61d3a68a36d56d9f18847f90
