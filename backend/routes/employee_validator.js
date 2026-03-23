@@ -30,6 +30,7 @@ const employeeSchema = Joi.object({
   startDate: Joi.date().iso().required(),
   password: Joi.string().min(6).required(),
   salary: Joi.number().positive().required(),
+  maritalStatus: Joi.string().valid('unmarried', 'married').optional().default('unmarried'),
 });
 
 // Validate Query Parameters
@@ -121,19 +122,8 @@ const updateEmployeeSchema = Joi.object({
   jobTitle: Joi.string().max(100),
   department: Joi.string().max(50),
   salary: Joi.number().positive().precision(2),
+  maritalStatus: Joi.string().valid('unmarried', 'married'),
 }).min(1); // At least one field must be provided
-
-router.put(
-  "/employees/:id",
-  validateParams(idParamSchema),
-  validate(updateEmployeeSchema),
-  async (req, res) => {
-    const { id } = req.params;
-    const updateData = req.body;
-    // Both params and body are validated
-    res.json({ message: "Employee updated", id, updateData });
-  }
-);
 
 module.exports = {
   loginSchema,

@@ -3,11 +3,17 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:intl/intl.dart';
 import 'package:payroll/frontend/widgets/attendance_details.dart';
+import 'package:payroll/frontend/widgets/salary_calculation.dart';
 
 class UserAttendanceList extends StatefulWidget {
   final int userId;
+  final bool showSalaryBox;
 
-  const UserAttendanceList({Key? key, required this.userId}) : super(key: key);
+  const UserAttendanceList({
+    Key? key,
+    required this.userId,
+    this.showSalaryBox = true,
+  }) : super(key: key);
 
   @override
   State<UserAttendanceList> createState() => _UserAttendanceListState();
@@ -15,32 +21,39 @@ class UserAttendanceList extends StatefulWidget {
 
 class _UserAttendanceListState extends State<UserAttendanceList> {
   List<dynamic> _attendanceHistory = [];
+  Map<String, dynamic>? _employeeDetails;
   bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _fetchAttendanceHistory();
+    _fetchData();
   }
 
-  Future<void> _fetchAttendanceHistory() async {
+  Future<void> _fetchData() async {
     try {
-      final response = await http.get(
+      final historyFuture = http.get(
         Uri.parse(
           'http://10.0.2.2:3000/api/attendance/history/${widget.userId}',
         ),
       );
+      final employeeFuture = http.get(
+        Uri.parse('http://10.0.2.2:3000/api/employees/${widget.userId}'),
+      );
 
-      if (response.statusCode == 200) {
+      final results = await Future.wait([historyFuture, employeeFuture]);
+
+      if (results[0].statusCode == 200 && results[1].statusCode == 200) {
         setState(() {
-          _attendanceHistory = jsonDecode(response.body);
+          _attendanceHistory = jsonDecode(results[0].body);
+          _employeeDetails = jsonDecode(results[1].body);
           _isLoading = false;
         });
       } else {
-        throw 'Failed to load history';
+        throw 'Failed to load data';
       }
     } catch (e) {
-      print('Error fetching attendance: $e');
+      print('Error fetching data: $e');
       setState(() => _isLoading = false);
     }
   }
@@ -57,7 +70,7 @@ class _UserAttendanceListState extends State<UserAttendanceList> {
     }
 
     return RefreshIndicator(
-      onRefresh: _fetchAttendanceHistory,
+      onRefresh: _fetchData,
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.all(16),
@@ -77,6 +90,18 @@ class _UserAttendanceListState extends State<UserAttendanceList> {
                 const SummaryCard(label: "Leave", count: 0, color: Colors.blue),
               ],
             ),
+            const SizedBox(height: 16),
+            if (widget.showSalaryBox &&
+                _employeeDetails != null &&
+                _employeeDetails!['salary'] != null)
+              SalaryCalculationTable(
+                totalSalary:
+                    double.tryParse(_employeeDetails!['salary'].toString()) ??
+                    0,
+                attendedDays: _attendanceHistory.length,
+                maritalStatus:
+                    _employeeDetails!['marital_status'] ?? 'unmarried',
+              ),
             const SizedBox(height: 24),
             const Text(
               "Recent Logs",

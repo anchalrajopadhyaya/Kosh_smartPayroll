@@ -16,6 +16,26 @@ router.post('/punch-in', async (req, res) => {
     }
 
     try {
+        // Creating a date range covering the entire day (00:00 to 23:59)
+        const targetDate = new Date(date);
+        const startOfDay = new Date(targetDate.setUTCHours(0, 0, 0, 0));
+        const endOfDay = new Date(targetDate.setUTCHours(23, 59, 59, 999));
+
+        //employee punch in once a day
+        const existingAttendance = await prisma.attendance.findFirst({
+            where: {
+                employee_id: employeeId,
+                date: {
+                    gte: startOfDay,
+                    lte: endOfDay
+                }
+            }
+        });
+
+        if (existingAttendance) {
+            return res.status(400).json({ message: 'You have already punched in today!' });
+        }
+
         //Calculate proximity
         let locationResult = { distance: null, isInside: null };
         let locationName = "Unknown";
@@ -162,7 +182,7 @@ router.get('/history/:employeeId', async (req, res) => {
     }
 });
 
-// Get Daily Attendance Report (All employees + their status for a specific date)
+//Get Daily Attendance Report
 router.get('/daily', async (req, res) => {
     const { date } = req.query; // YYYY-MM-DD
     if (!date) return res.status(400).json({ message: 'Date is required' });
@@ -183,12 +203,11 @@ router.get('/daily', async (req, res) => {
             orderBy: { first_name: 'asc' }
         });
 
-        // 2. Get attendance logs for that specific date
+        //getting attendance logs for that specific date
         const attendanceLogs = await prisma.attendance.findMany({
             where: { date: queryDate }
         });
 
-        // 3. Merge data
         const report = employees.map(emp => {
             const log = attendanceLogs.find(log => log.employee_id === emp.id);
             return {
@@ -201,7 +220,7 @@ router.get('/daily', async (req, res) => {
                 punch_in_time: log ? log.punch_in_time : null,
                 punch_out_time: log ? log.punch_out_time : null,
                 attendance_id: log ? log.id : null,
-                // Include full log data for the detail dialog
+                //full log data for the detail dialog
                 logData: log || null
             };
         });

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:payroll/frontend/attendance.dart';
 import 'package:payroll/frontend/employee/dashboard.dart';
 import 'package:payroll/frontend/employee/navemp.dart';
+import 'package:payroll/frontend/employee/payslips.dart';
 import 'package:payroll/frontend/employee/profile.dart';
 import 'package:payroll/frontend/hr_attendance.dart';
 import 'package:payroll/frontend/hr_dashboard.dart';
@@ -27,7 +28,7 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     _screens = [
       EmployeeDashboard(userData: widget.userData),
-      const Center(child: Text("Payslips Screen")),
+      PayslipScreen(userData: widget.userData),
       AttendanceContent(userData: widget.userData),
       ProfileScreen(userData: widget.userData),
     ];

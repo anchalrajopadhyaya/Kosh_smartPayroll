@@ -5,14 +5,14 @@ const bcrypt = require("bcrypt");
 const { employeeSchema } = require("./employee_validator");
 const { validate } = require("../middleware/validation");
 
-// Generate employee code
+//Generate employee code
 function generateEmployeeCode() {
   const year = new Date().getFullYear();
   const random = Math.floor(1000 + Math.random() * 9000);
   return `EMP-${year}-${random}`;
 }
 
-// Create new employee - Using middleware for validation
+//Create new employee - Using middleware for validation
 router.post("/employees", validate(employeeSchema), async (req, res) => {
   const {
     firstName,
@@ -31,6 +31,7 @@ router.post("/employees", validate(employeeSchema), async (req, res) => {
     startDate,
     password,
     salary,
+    maritalStatus,
   } = req.body; //validated by middleware
 
   const employeeCode = generateEmployeeCode();
@@ -57,6 +58,7 @@ router.post("/employees", validate(employeeSchema), async (req, res) => {
         start_date: new Date(startDate),
         password: hashedPassword,
         salary: salary,
+        marital_status: maritalStatus || "unmarried",
       }
     });
 
@@ -65,7 +67,7 @@ router.post("/employees", validate(employeeSchema), async (req, res) => {
       employeeCode: newEmployee.employee_code,
     });
   } catch (err) {
-    if (err.code === "P2002") { // Prisma unique constraint violation code
+    if (err.code === "P2002") { //Prisma unique constraint violation code
       return res.status(409).json({
         message: "Email or other unique field already exists",
       });
@@ -76,7 +78,7 @@ router.post("/employees", validate(employeeSchema), async (req, res) => {
   }
 });
 
-// Get employee details
+//Get employee details
 router.get("/employees", async (req, res) => {
   try {
     const employees = await prisma.employees.findMany({
@@ -97,6 +99,7 @@ router.get("/employees", async (req, res) => {
         job_title: true,
         department: true,
         salary: true,
+        marital_status: true,
         dob: true,
         start_date: true,
         created_at: true,
@@ -110,6 +113,44 @@ router.get("/employees", async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Server error" });
+  }
+});
+
+//Get specific employee by ID
+router.get("/employees/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    const employee = await prisma.employees.findUnique({
+      where: { id: parseInt(id) },
+      select: {
+        id: true,
+        employee_code: true,
+        first_name: true,
+        last_name: true,
+        email: true,
+        phone: true,
+        city: true,
+        district: true,
+        province: true,
+        ward: true,
+        job_title: true,
+        department: true,
+        salary: true,
+        marital_status: true,
+        dob: true,
+        start_date: true,
+        created_at: true,
+      }
+    });
+
+    if (!employee) {
+      return res.status(404).json({ message: "Employee not found" });
+    }
+
+    res.status(200).json(employee);
+  } catch (err) {
+    console.error("Error fetching employee:", err);
+    res.status(500).json({ error: "Server error fetching employee" });
   }
 });
 

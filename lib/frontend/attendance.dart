@@ -20,7 +20,12 @@ class AttendanceContent extends StatelessWidget {
       ),
       body: Column(
         children: [
-          Expanded(child: UserAttendanceList(userId: userData['id'])),
+          Expanded(
+            child: UserAttendanceList(
+              userId: userData['id'],
+              showSalaryBox: false,
+            ),
+          ),
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(

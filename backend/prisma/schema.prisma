@@ -25,6 +25,7 @@ model employees {
   dob            DateTime? @db.Date
   start_date     DateTime? @db.Date
   salary         Decimal?  @db.Decimal(10, 2)
+  marital_status String?   @default("unmarried") @db.VarChar(20)
   created_at     DateTime? @default(now()) @db.Timestamp(6)
   password       String?   @db.VarChar(255)
   attendance     attendance[]

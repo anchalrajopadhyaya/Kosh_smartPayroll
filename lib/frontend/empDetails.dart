@@ -250,6 +250,10 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
                 _detailRow('Job Title', employee['job_title']),
                 _detailRow('Department', employee['department']),
                 _detailRow('City', employee['city']),
+                _detailRow(
+                  'Marital Status',
+                  employee['marital_status']?.toUpperCase(),
+                ),
                 _detailRow('Salary', 'NPR ${employee['salary']}'),
                 const SizedBox(height: 20),
               ],

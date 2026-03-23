@@ -150,7 +150,7 @@ class EmployeeDashboardState extends State<EmployeeDashboard> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xfff4f6f9),
+      backgroundColor: const Color(0xFFEBF1F6),
       appBar: AppBar(
         title: Text("Hello, ${widget.userData['firstName']}"),
         backgroundColor: Colors.white,
