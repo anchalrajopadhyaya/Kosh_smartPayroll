@@ -79,11 +79,19 @@ model time_requests {
   employee_id  Int
   request_type String    @db.VarChar(50)
   date         DateTime  @db.Date
-  time_in         String    @db.VarChar(10)
-  time_out        String    @db.VarChar(10)
+  time_in      String?   @db.VarChar(10)
+  time_out     String?   @db.VarChar(10)
   reason       String?   @db.Text
   status       String?   @default("Pending") @db.VarChar(20)
   created_at   DateTime? @default(now()) @db.Timestamp(6)
 
   employee     employees @relation(fields: [employee_id], references: [id])
+}
+
+model anonymous_feedback {
+  id         Int       @id @default(autoincrement())
+  message    String    @db.Text
+  category   String    @db.VarChar(50)
+  status     String?   @default("Unread") @db.VarChar(20)
+  created_at DateTime? @default(now()) @db.Timestamp(6)
 }

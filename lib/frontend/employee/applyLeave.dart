@@ -57,9 +57,7 @@ class _ApplyLeaveScreenState extends State<ApplyLeaveScreen> {
       setState(() => _isLoading = true);
       try {
         final response = await http.post(
-          Uri.parse(
-            'http://10.0.2.2:3000/api/leave',
-          ), // update your IP if you are testing on real device
+          Uri.parse('http://10.0.2.2:3000/api/leave'),
           headers: {'Content-Type': 'application/json'},
           body: jsonEncode({
             'employeeId': widget.userData['id'],

@@ -33,7 +33,7 @@ class SalaryCalculationTable extends StatelessWidget {
 
     double ssfEmployee = basicPayable * 0.11;
 
-    // Tax Calculation Logic (Nepal FY 2080/81)
+    // Tax Calculation Logic
     double annualGross = grossPayable * 12;
     double annualSsf = ssfEmployee * 12;
     double taxableIncome = annualGross - annualSsf;

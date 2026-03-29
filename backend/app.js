@@ -193,6 +193,9 @@ app.use("/api/leave", leaveRoutes);
 const timeRequestRoutes = require("./routes/timerequest");
 app.use("/api/time-request", timeRequestRoutes);
 
+const feedbackRoutes = require("./routes/feedback");
+app.use("/api/feedback", feedbackRoutes);
+
 // Test route
 app.get("/", (req, res) => {
   res.json({ message: "Kosh Payroll API is running" });

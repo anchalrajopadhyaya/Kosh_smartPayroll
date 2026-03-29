@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:payroll/frontend/HR/hr_feedback.dart';
 import 'package:payroll/frontend/HR/hr_leave_requests.dart';
 import 'package:payroll/frontend/HR/hr_timerequest.dart';
 import 'empAdd.dart';
@@ -54,7 +55,6 @@ class HrDashboardScreen extends StatelessWidget {
         children: [
           Expanded(child: _buildToggleOption('Employee', false)),
           Expanded(child: _buildToggleOption('HR', true)),
-          Expanded(child: _buildToggleOption('Accountant', false)),
         ],
       ),
     );
@@ -148,7 +148,7 @@ class HrDashboardScreen extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color.fromARGB(255, 24, 137, 132), // dark blue/black
+        color: const Color.fromARGB(255, 24, 137, 132),
         borderRadius: BorderRadius.circular(16),
       ),
       clipBehavior: Clip.antiAlias,
@@ -240,7 +240,12 @@ class HrDashboardScreen extends StatelessWidget {
             ),
           );
         }),
-        _buildActionItem(Icons.insert_chart_outlined, 'Reports', null),
+        _buildActionItem(Icons.feedback_outlined, 'Feedback', () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const HrFeedbackScreen()),
+          );
+        }),
       ],
     );
   }
