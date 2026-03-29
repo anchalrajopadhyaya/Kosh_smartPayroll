@@ -91,24 +91,30 @@ class _HrLeaveRequestsScreenState extends State<HrLeaveRequestsScreen>
           ],
         ),
       ),
-
-      bottomNavigationBar: _buildBottomNavigationBar(),
     );
   }
 
   Widget _buildHeader() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
+      padding: const EdgeInsets.fromLTRB(8, 20, 20, 16),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const Text(
-            'Leave Requests',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF141A29),
-            ),
+          Row(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.arrow_back, color: Color(0xFF141A29)),
+                onPressed: () => Navigator.pop(context),
+              ),
+              const Text(
+                'Leave Requests',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF141A29),
+                ),
+              ),
+            ],
           ),
           Container(
             padding: const EdgeInsets.all(8),
@@ -379,47 +385,6 @@ class _HrLeaveRequestsScreenState extends State<HrLeaveRequestsScreen>
             ),
         ],
       ),
-    );
-  }
-
-  Widget _buildBottomNavigationBar() {
-    return BottomNavigationBar(
-      currentIndex: 1, // 'Directory' highlighted in image
-      type: BottomNavigationBarType.fixed,
-      selectedItemColor: const Color(0xFFFBA826),
-      unselectedItemColor: Colors.grey[500],
-      backgroundColor: Colors.white,
-      selectedLabelStyle: const TextStyle(
-        fontWeight: FontWeight.bold,
-        fontSize: 11,
-      ),
-      unselectedLabelStyle: const TextStyle(
-        fontWeight: FontWeight.normal,
-        fontSize: 11,
-      ),
-      elevation: 20,
-      items: const [
-        BottomNavigationBarItem(
-          icon: Icon(Icons.grid_view_outlined),
-          activeIcon: Icon(Icons.grid_view),
-          label: 'Dashboard',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.supervisor_account_outlined),
-          activeIcon: Icon(Icons.supervisor_account),
-          label: 'Directory',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.payments_outlined),
-          activeIcon: Icon(Icons.payments),
-          label: 'Payroll',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.manage_accounts_outlined),
-          activeIcon: Icon(Icons.manage_accounts),
-          label: 'Settings',
-        ),
-      ],
     );
   }
 }
