@@ -190,6 +190,8 @@ app.use("/api/attendance", attendanceRoutes);
 const leaveRoutes = require("./routes/leave");
 app.use("/api/leave", leaveRoutes);
 
+const timeRequestRoutes = require("./routes/timerequest");
+app.use("/api/time-request", timeRequestRoutes);
 
 // Test route
 app.get("/", (req, res) => {

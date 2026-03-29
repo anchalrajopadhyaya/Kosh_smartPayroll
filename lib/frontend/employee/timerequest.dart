@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class TimeRequestPage extends StatefulWidget {
-  const TimeRequestPage({super.key});
+  final Map<String, dynamic> userData;
+  const TimeRequestPage({super.key, required this.userData});
 
   @override
   State<TimeRequestPage> createState() => _TimeRequestPageState();
@@ -12,7 +15,8 @@ class _TimeRequestPageState extends State<TimeRequestPage> {
 
   String _selectedRequestType = 'Late Check-in';
   DateTime _selectedDate = DateTime.now();
-  TimeOfDay _selectedTime = TimeOfDay.now();
+  TimeOfDay? _timeIn;
+  TimeOfDay? _timeOut;
   final TextEditingController _reasonController = TextEditingController();
 
   final List<String> _requestTypes = [
@@ -55,10 +59,12 @@ class _TimeRequestPageState extends State<TimeRequestPage> {
     }
   }
 
-  Future<void> _selectTime(BuildContext context) async {
+  Future<void> _selectTime(BuildContext context, bool isIn) async {
+    final TimeOfDay initialTime =
+        isIn ? (_timeIn ?? TimeOfDay.now()) : (_timeOut ?? TimeOfDay.now());
     final TimeOfDay? picked = await showTimePicker(
       context: context,
-      initialTime: _selectedTime,
+      initialTime: initialTime,
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
@@ -72,30 +78,84 @@ class _TimeRequestPageState extends State<TimeRequestPage> {
         );
       },
     );
-    if (picked != null && picked != _selectedTime) {
+    if (picked != null) {
       setState(() {
-        _selectedTime = picked;
+        if (isIn) {
+          _timeIn = picked;
+        } else {
+          _timeOut = picked;
+        }
       });
     }
   }
 
-  void _submitRequest() {
+  bool _isLoading = false;
+
+  Future<void> _submitRequest() async {
     if (_formKey.currentState!.validate()) {
-      // Handle form submission here
-      // You can send data to your backend
+      if (_timeIn == null && _timeOut == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Please select at least Time In or Time Out'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Time request submitted successfully!'),
-          backgroundColor: Color(0xFF188984),
-          duration: Duration(seconds: 2),
-        ),
-      );
+      setState(() => _isLoading = true);
 
-      // Navigate back after submission
-      Future.delayed(const Duration(seconds: 2), () {
-        Navigator.pop(context);
-      });
+      try {
+        final url = Uri.parse(
+          'http://10.0.2.2:3000/api/time-request',
+        ); // update IP for mobile
+
+        final dateStr =
+            "${_selectedDate.year}-${_selectedDate.month.toString().padLeft(2, '0')}-${_selectedDate.day.toString().padLeft(2, '0')}";
+
+        String? timeInStr;
+        if (_timeIn != null) {
+          timeInStr =
+              "${_timeIn!.hour.toString().padLeft(2, '0')}:${_timeIn!.minute.toString().padLeft(2, '0')}";
+        }
+
+        String? timeOutStr;
+        if (_timeOut != null) {
+          timeOutStr =
+              "${_timeOut!.hour.toString().padLeft(2, '0')}:${_timeOut!.minute.toString().padLeft(2, '0')}";
+        }
+
+        final response = await http.post(
+          url,
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({
+            'employeeId': widget.userData['id'],
+            'requestType': _selectedRequestType,
+            'date': dateStr,
+            'timeIn': timeInStr,
+            'timeOut': timeOutStr,
+            'reason': _reasonController.text,
+          }),
+        );
+
+        if (response.statusCode == 201) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Time request submitted successfully!'),
+              backgroundColor: Color(0xFF188984),
+            ),
+          );
+          Navigator.pop(context);
+        } else {
+          throw Exception('Failed to submit request');
+        }
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+        );
+      } finally {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -241,45 +301,116 @@ class _TimeRequestPageState extends State<TimeRequestPage> {
 
               const SizedBox(height: 20),
 
-              // Time Selection
-              const Text(
-                "Time",
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black87,
-                ),
-              ),
-              const SizedBox(height: 8),
-              InkWell(
-                onTap: () => _selectTime(context),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 16,
+              Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          "Time In",
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        InkWell(
+                          onTap: () => _selectTime(context, true),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 16,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: Colors.grey[300]!),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(
+                                  Icons.login,
+                                  color: Color(0xFF188984),
+                                  size: 18,
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    _timeIn?.format(context) ?? "Select",
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color:
+                                          _timeIn == null
+                                              ? Colors.grey
+                                              : Colors.black,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.grey[300]!),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          "Time Out",
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        InkWell(
+                          onTap: () => _selectTime(context, false),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 16,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: Colors.grey[300]!),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(
+                                  Icons.logout,
+                                  color: Color(0xFF188984),
+                                  size: 18,
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    _timeOut?.format(context) ?? "Select",
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color:
+                                          _timeOut == null
+                                              ? Colors.grey
+                                              : Colors.black,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Icons.access_time,
-                        color: Color(0xFF188984),
-                        size: 20,
-                      ),
-                      const SizedBox(width: 12),
-                      Text(
-                        _selectedTime.format(context),
-                        style: const TextStyle(fontSize: 15),
-                      ),
-                      const Spacer(),
-                      Icon(Icons.arrow_drop_down, color: Colors.grey[600]),
-                    ],
-                  ),
-                ),
+                ],
               ),
 
               const SizedBox(height: 20),
@@ -327,7 +458,7 @@ class _TimeRequestPageState extends State<TimeRequestPage> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: _submitRequest,
+                  onPressed: _isLoading ? null : _submitRequest,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF188984),
                     padding: const EdgeInsets.symmetric(vertical: 16),
@@ -336,14 +467,24 @@ class _TimeRequestPageState extends State<TimeRequestPage> {
                     ),
                     elevation: 2,
                   ),
-                  child: const Text(
-                    "Submit Request",
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                  ),
+                  child:
+                      _isLoading
+                          ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
+                          : const Text(
+                            "Submit Request",
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                            ),
+                          ),
                 ),
               ),
 

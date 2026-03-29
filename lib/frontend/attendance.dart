@@ -47,7 +47,8 @@ class AttendanceContent extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const TimeRequestPage(),
+                          builder:
+                              (context) => TimeRequestPage(userData: userData),
                         ),
                       );
                     },

@@ -4,10 +4,10 @@ import 'package:payroll/frontend/employee/dashboard.dart';
 import 'package:payroll/frontend/employee/navemp.dart';
 import 'package:payroll/frontend/employee/payslips.dart';
 import 'package:payroll/frontend/employee/profile.dart';
-import 'package:payroll/frontend/hr_attendance.dart';
-import 'package:payroll/frontend/hr_dashboard.dart';
-import 'package:payroll/frontend/empDetails.dart';
-import 'package:payroll/frontend/navhr.dart';
+import 'package:payroll/frontend/HR/hr_attendance.dart';
+import 'package:payroll/frontend/HR/hr_dashboard.dart';
+import 'package:payroll/frontend/HR/empDetails.dart';
+import 'package:payroll/frontend/HR/navhr.dart';
 
 class HomeScreen extends StatefulWidget {
   final Map<String, dynamic> userData;
