@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:intl/intl.dart';
 
 class HrLeaveRequestsScreen extends StatefulWidget {
   const HrLeaveRequestsScreen({super.key});
@@ -10,11 +13,52 @@ class HrLeaveRequestsScreen extends StatefulWidget {
 class _HrLeaveRequestsScreenState extends State<HrLeaveRequestsScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  List<dynamic> _allLeaves = [];
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
+    _fetchLeaves();
+  }
+
+  Future<void> _fetchLeaves() async {
+    setState(() => _isLoading = true);
+    try {
+      final response = await http.get(
+        Uri.parse('http://10.0.2.2:3000/api/leave/all'),
+      );
+      if (response.statusCode == 200) {
+        setState(() {
+          _allLeaves = jsonDecode(response.body);
+        });
+      }
+    } catch (e) {
+      debugPrint('Error fetching leaves: $e');
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _updateLeaveStatus(int leaveId, String status) async {
+    try {
+      final response = await http.put(
+        Uri.parse('http://10.0.2.2:3000/api/leave/$leaveId/status'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'status': status}),
+      );
+      if (response.statusCode == 200) {
+        _fetchLeaves(); // Refresh the list
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Leave $status successfully!')),
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint('Error updating leave: $e');
+    }
   }
 
   @override
@@ -38,17 +82,16 @@ class _HrLeaveRequestsScreenState extends State<HrLeaveRequestsScreen>
               child: TabBarView(
                 controller: _tabController,
                 children: [
-                  _buildPendingList(),
-                  const Center(child: Text("Approved Leaves")),
-                  const Center(child: Text("Leave History")),
+                  _buildListByStatus('Pending'),
+                  _buildListByStatus('Approved'),
+                  _buildListByStatus('Declined'),
                 ],
               ),
             ),
           ],
         ),
       ),
-      // To match the image exactly, we will include the bottom nav bar visually here,
-      // but in a real app, it might be handled by the main navigation state.
+
       bottomNavigationBar: _buildBottomNavigationBar(),
     );
   }
@@ -109,9 +152,9 @@ class _HrLeaveRequestsScreenState extends State<HrLeaveRequestsScreen>
                     color: Color(0xFFFBA826),
                     shape: BoxShape.circle,
                   ),
-                  child: const Text(
-                    '3',
-                    style: TextStyle(
+                  child: Text(
+                    '${_allLeaves.where((l) => l['status'] == 'Pending').length}',
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
@@ -128,48 +171,54 @@ class _HrLeaveRequestsScreenState extends State<HrLeaveRequestsScreen>
     );
   }
 
-  Widget _buildPendingList() {
-    return ListView(
+  Widget _buildListByStatus(String status) {
+    if (_isLoading) return const Center(child: CircularProgressIndicator());
+
+    final filteredLeaves =
+        _allLeaves.where((l) => l['status'] == status).toList();
+    if (filteredLeaves.isEmpty)
+      return const Center(child: Text('No leaves found.'));
+
+    return ListView.builder(
       padding: const EdgeInsets.all(16),
-      children: [
-        _buildLeaveCard(
-          name: 'Emily Chen',
-          role: 'UX Designer',
-          imageUrl: 'https://randomuser.me/api/portraits/women/44.jpg',
-          leaveType: 'Sick Leave',
-          dateRange: 'Oct 12 - Oct 14, 2023 (3 Days)',
-          reason:
-              'Feeling unwell since last night, need a few days to recover.',
-        ),
-        const SizedBox(height: 16),
-        _buildLeaveCard(
-          name: 'Carlos Ruiz',
-          role: 'Marketing Specialist',
-          imageUrl: 'https://randomuser.me/api/portraits/men/32.jpg',
-          leaveType: 'Vacation',
-          dateRange: 'Nov 1 - Nov 10, 2023 (10 Days)',
-          reason: 'Annual family vacation.',
-        ),
-        const SizedBox(height: 16),
-        _buildLeaveCard(
-          name: 'Michael Obi',
-          role: 'Software Engineer',
-          imageUrl: 'https://randomuser.me/api/portraits/men/86.jpg',
-          leaveType: 'Personal',
-          dateRange: 'Oct 20, 2023 (1 Day)',
-          reason: 'Attending a family event out of town.',
-        ),
-      ],
+      itemCount: filteredLeaves.length,
+      itemBuilder: (context, index) {
+        final leave = filteredLeaves[index];
+        final emp = leave['employee'];
+        final startDate = DateTime.parse(leave['start_date']);
+        final endDate = DateTime.parse(leave['end_date']);
+        final days = endDate.difference(startDate).inDays + 1;
+
+        return Column(
+          children: [
+            _buildLeaveCard(
+              id: leave['id'],
+              name: '${emp['first_name']} ${emp['last_name']}',
+              role: emp['job_title'] ?? 'Employee',
+              imageUrl:
+                  'https://ui-avatars.com/api/?name=${emp['first_name']}+${emp['last_name']}',
+              leaveType: leave['leave_type'],
+              dateRange:
+                  '${DateFormat('MMM dd').format(startDate)} - ${DateFormat('MMM dd, yyyy').format(endDate)} ($days Days)',
+              reason: leave['reason'] ?? 'No reason provided.',
+              status: leave['status'],
+            ),
+            const SizedBox(height: 16),
+          ],
+        );
+      },
     );
   }
 
   Widget _buildLeaveCard({
+    required int id,
     required String name,
     required String role,
     required String imageUrl,
     required String leaveType,
     required String dateRange,
     required String reason,
+    required String status,
   }) {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -281,52 +330,53 @@ class _HrLeaveRequestsScreenState extends State<HrLeaveRequestsScreen>
             ),
           ),
           const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: () {},
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    side: const BorderSide(color: Colors.black12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+          if (status == 'Pending')
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => _updateLeaveStatus(id, 'Declined'),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      side: const BorderSide(color: Colors.black12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
-                  ),
-                  child: const Text(
-                    'Decline',
-                    style: TextStyle(
-                      color: Color(0xFF141A29),
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: () {},
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF188984),
-                    elevation: 0,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  child: const Text(
-                    'Approve',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
+                    child: const Text(
+                      'Decline',
+                      style: TextStyle(
+                        color: Color(0xFF141A29),
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
-          ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => _updateLeaveStatus(id, 'Approved'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF188984),
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: const Text(
+                      'Approve',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
         ],
       ),
     );

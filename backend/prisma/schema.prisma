@@ -29,6 +29,7 @@ model employees {
   created_at     DateTime? @default(now()) @db.Timestamp(6)
   password       String?   @db.VarChar(255)
   attendance     attendance[]
+  leave_requests   leave_requests[]
 }
 
 model attendance {
@@ -47,6 +48,19 @@ model attendance {
   location    String?  @db.VarChar(255)
   location_name String? @db.VarChar(255)
   distance    Decimal? @db.Decimal(10, 4)
+
+  employee    employees @relation(fields: [employee_id], references: [id])
+}
+
+model leave_requests {
+  id          Int       @id @default(autoincrement())
+  employee_id Int
+  leave_type  String    @db.VarChar(50)
+  start_date  DateTime  @db.Date
+  end_date    DateTime  @db.Date
+  reason      String?   @db.Text
+  status      String?   @default("Pending") @db.VarChar(20)
+  created_at  DateTime? @default(now()) @db.Timestamp(6)
 
   employee    employees @relation(fields: [employee_id], references: [id])
 }

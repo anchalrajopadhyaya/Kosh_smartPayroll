@@ -187,7 +187,11 @@ app.use("/api", employeeRoutes);
 const attendanceRoutes = require("./routes/attendance");
 app.use("/api/attendance", attendanceRoutes);
 
-//Test route
+const leaveRoutes = require("./routes/leave");
+app.use("/api/leave", leaveRoutes);
+
+
+// Test route
 app.get("/", (req, res) => {
   res.json({ message: "Kosh Payroll API is running" });
 });

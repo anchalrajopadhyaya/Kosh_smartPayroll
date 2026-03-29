@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:payroll/frontend/employee/applyLeave.dart';
 import 'package:payroll/frontend/notification.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
@@ -14,7 +15,7 @@ class EmployeeDashboard extends StatefulWidget {
 
 class EmployeeDashboardState extends State<EmployeeDashboard> {
   bool _isLoading = false;
-  String _status = 'PUNCHED_OUT'; // Default status
+  String _status = 'PUNCHED_OUT';
 
   @override
   void initState() {
@@ -172,7 +173,7 @@ class EmployeeDashboardState extends State<EmployeeDashboard> {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            // Salary Card (Kept as is)
+            // Salary Card
             _buildSalaryCard(),
 
             const SizedBox(height: 24),
@@ -222,7 +223,7 @@ class EmployeeDashboardState extends State<EmployeeDashboard> {
               ),
             ),
             const SizedBox(height: 24),
-            // Leaves Section (Kept as is)
+            // Leaves Section
             const Align(
               alignment: Alignment.centerLeft,
               child: Text(
@@ -238,13 +239,41 @@ class EmployeeDashboardState extends State<EmployeeDashboard> {
                 Expanded(child: _leaveBox("Sick Leave", "5 Days")),
               ],
             ),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder:
+                          (context) =>
+                              ApplyLeaveScreen(userData: widget.userData),
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.calendar_today),
+                label: const Text(
+                  'APPLY FOR LEAVE',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                ),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: const Color(0xFF188984),
+                  side: const BorderSide(color: Color(0xFF188984), width: 1.5),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 
-  // ... (Helper methods: _buildSalaryCard, _leaveBox, etc. would be roughly same as before or refactored)
   Widget _buildSalaryCard() {
     return Container(
       padding: const EdgeInsets.all(20),
