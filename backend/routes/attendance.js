@@ -16,24 +16,23 @@ router.post('/punch-in', async (req, res) => {
     }
 
     try {
-        // Creating a date range covering the entire day (00:00 to 23:59)
+        // Create an explicit date range covering the entire day (00:00 to 23:59)
         const targetDate = new Date(date);
         const startOfDay = new Date(targetDate.setUTCHours(0, 0, 0, 0));
         const endOfDay = new Date(targetDate.setUTCHours(23, 59, 59, 999));
 
-        //employee punch in once a day
-        const existingAttendance = await prisma.attendance.findFirst({
+        // Check if employee is currently punched in but hasn't punched out
+        const activeAttendance = await prisma.attendance.findFirst({
             where: {
                 employee_id: employeeId,
-                date: {
-                    gte: startOfDay,
-                    lte: endOfDay
-                }
-            }
+                date: new Date(date),
+                punch_out_time: null
+            },
+            orderBy: { id: 'desc' }
         });
 
-        if (existingAttendance) {
-            return res.status(400).json({ message: 'You have already punched in today!' });
+        if (activeAttendance) {
+            return res.status(400).json({ message: 'You are currently punched in. Please punch out first!' });
         }
 
         //Calculate proximity
@@ -63,6 +62,13 @@ router.post('/punch-in', async (req, res) => {
             },
         });
 
+        // Refresh the Materialized View silently
+        try {
+            await prisma.$executeRawUnsafe('REFRESH MATERIALIZED VIEW employee_daily_punches;');
+        } catch (mvErr) {
+            console.error('Failed to refresh MV:', mvErr);
+        }
+
         res.status(201).json({
             message: locationResult.isInside
                 ? `Punch in successful at ${locationName} (In Range)`
@@ -83,14 +89,14 @@ router.post('/punch-out', async (req, res) => {
     }
 
     try {
-        //finding latest attendance for this employee
+        //finding latest un-punched-out attendance for this employee
         const latestAttendance = await prisma.attendance.findFirst({
             where: {
                 employee_id: employeeId,
                 date: new Date(date),
                 punch_out_time: null
             },
-            orderBy: { date: 'desc' },
+            orderBy: { id: 'desc' },
         });
 
         if (!latestAttendance) {
@@ -123,6 +129,13 @@ router.post('/punch-out', async (req, res) => {
                 punch_out_distance: locationResult.distance,
             },
         });
+
+        // Refresh the Materialized View silently
+        try {
+            await prisma.$executeRawUnsafe('REFRESH MATERIALIZED VIEW employee_daily_punches;');
+        } catch (mvErr) {
+            console.error('Failed to refresh MV:', mvErr);
+        }
         res.status(200).json({
             message: locationResult.isInside
                 ? `Punch out successful at ${locationName} (In Range)` :
@@ -148,7 +161,7 @@ router.get('/status/:employeeId', async (req, res) => {
                 employee_id: parseInt(employeeId),
                 date: today,
             },
-            orderBy: { punch_in_time: 'desc' },
+            orderBy: { id: 'desc' }, // Order by id desc to get the most recent punch on this date
         });
         if (!attendance) {
             return res.status(200).json({ status: 'Punched_Out', attendance: null });
@@ -182,7 +195,26 @@ router.get('/history/:employeeId', async (req, res) => {
     }
 });
 
-//Get Daily Attendance Report
+//Get detailed daily punches using the materialized view
+router.get('/daily-punches/:employeeId', async (req, res) => {
+    const { employeeId } = req.params;
+
+    try {
+        // Query the materialized view directly using raw SQL
+        const punches = await prisma.$queryRawUnsafe(`
+            SELECT * FROM employee_daily_punches 
+            WHERE employee_id = $1
+            ORDER BY date DESC
+        `, parseInt(employeeId));
+
+        res.status(200).json(punches);
+    } catch (error) {
+        console.error('Fetch daily punches error:', error);
+        res.status(500).json({ message: 'Server error fetching daily punches from materialized view' });
+    }
+});
+
+// Get Daily Attendance Report (All employees + their status for a specific date)
 router.get('/daily', async (req, res) => {
     const { date } = req.query; // YYYY-MM-DD
     if (!date) return res.status(400).json({ message: 'Date is required' });
@@ -203,11 +235,12 @@ router.get('/daily', async (req, res) => {
             orderBy: { first_name: 'asc' }
         });
 
-        //getting attendance logs for that specific date
+        // 2. Get attendance logs for that specific date
         const attendanceLogs = await prisma.attendance.findMany({
             where: { date: queryDate }
         });
 
+        // 3. Merge data
         const report = employees.map(emp => {
             const log = attendanceLogs.find(log => log.employee_id === emp.id);
             return {
@@ -220,7 +253,7 @@ router.get('/daily', async (req, res) => {
                 punch_in_time: log ? log.punch_in_time : null,
                 punch_out_time: log ? log.punch_out_time : null,
                 attendance_id: log ? log.id : null,
-                //full log data for the detail dialog
+                // Include full log data for the detail dialog
                 logData: log || null
             };
         });

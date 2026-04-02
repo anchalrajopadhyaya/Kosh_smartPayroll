@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:payroll/frontend/HR/empDetails.dart';
+import 'package:payroll/frontend/HR/hrSettings.dart';
+import 'package:payroll/frontend/HR/hr_dashboard.dart';
+import 'package:payroll/frontend/HR/navhr.dart';
 import 'package:payroll/frontend/attendance.dart';
 import 'package:payroll/frontend/employee/dashboard.dart';
-import 'package:payroll/frontend/employee/navemp.dart';
 import 'package:payroll/frontend/employee/payslips.dart';
+import 'package:payroll/frontend/employee/navemp.dart';
 import 'package:payroll/frontend/employee/profile.dart';
-import 'package:payroll/frontend/HR/hr_attendance.dart';
-import 'package:payroll/frontend/HR/hr_dashboard.dart';
-import 'package:payroll/frontend/HR/empDetails.dart';
-import 'package:payroll/frontend/HR/navhr.dart';
+import 'package:payroll/frontend/hr/hr_attendance.dart';
 
 class HomeScreen extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -76,7 +77,7 @@ class _HrHomeScreenState extends State<HrHomeScreen> {
       ),
       const EmployeeScreen(),
       const HrAttendanceScreen(),
-      const Center(child: Text("Settings Screen")),
+      HrSettingsScreen(userData: widget.userData),
     ];
   }
 

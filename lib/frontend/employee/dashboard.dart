@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:payroll/frontend/employee/applyLeave.dart';
-import 'package:payroll/frontend/employee/emp_feedback.dart';
 import 'package:payroll/frontend/notification.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:intl/intl.dart';
+import 'package:payroll/frontend/employee/emp_feedback.dart';
+import 'package:payroll/frontend/widgets/daily_punchesDialog.dart';
 
 class EmployeeDashboard extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -16,7 +17,7 @@ class EmployeeDashboard extends StatefulWidget {
 
 class EmployeeDashboardState extends State<EmployeeDashboard> {
   bool _isLoading = false;
-  String _status = 'PUNCHED_OUT';
+  String _status = 'PUNCHED_OUT'; // Default status
 
   @override
   void initState() {
@@ -107,17 +108,17 @@ class EmployeeDashboardState extends State<EmployeeDashboard> {
   Future<void> _handlePunchOut() async {
     setState(() => _isLoading = true);
     try {
-      //Get Location
+      // 1. Get Location
       Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
       );
-
+      // 2. Prepare Data
       final String locationString =
           "${position.latitude}, ${position.longitude}";
       final DateTime now = DateTime.now();
       final String date = DateFormat('yyyy-MM-dd').format(now);
       final String time = DateFormat('HH:mm').format(now);
-      //Send to Backend
+      // 3. Send to Backend
       final response = await http.post(
         Uri.parse('http://10.0.2.2:3000/api/attendance/punch-out'),
         headers: {'Content-Type': 'application/json'},
@@ -174,7 +175,7 @@ class EmployeeDashboardState extends State<EmployeeDashboard> {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            // Salary Card
+            // Salary Card (Kept as is)
             _buildSalaryCard(),
 
             const SizedBox(height: 24),
@@ -223,8 +224,35 @@ class EmployeeDashboardState extends State<EmployeeDashboard> {
                 ),
               ),
             ),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder:
+                        (context) =>
+                            DailyPunchesDialog(userData: widget.userData),
+                  );
+                },
+                icon: const Icon(Icons.history),
+                label: const Text(
+                  'VIEW DAILY PUNCHES',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                ),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: const Color(0xFF188984),
+                  side: const BorderSide(color: Color(0xFF188984), width: 1.5),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                ),
+              ),
+            ),
             const SizedBox(height: 24),
-            // Leaves Section
+            // Leaves Section (Kept as is)
             const Align(
               alignment: Alignment.centerLeft,
               child: Text(
@@ -302,6 +330,7 @@ class EmployeeDashboardState extends State<EmployeeDashboard> {
     );
   }
 
+  // ... (Helper methods: _buildSalaryCard, _leaveBox, etc. would be roughly same as before or refactored)
   Widget _buildSalaryCard() {
     return Container(
       padding: const EdgeInsets.all(20),

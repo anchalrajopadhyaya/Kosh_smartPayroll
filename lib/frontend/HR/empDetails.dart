@@ -202,7 +202,6 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
           ],
         ),
         onTap: () {
-          // TODO: Navigate to employee detail page
           _showEmployeeDetails(context, employee);
         },
       ),
