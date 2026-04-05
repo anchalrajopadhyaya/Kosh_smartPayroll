@@ -31,6 +31,7 @@ const employeeSchema = Joi.object({
   password: Joi.string().min(6).required(),
   salary: Joi.number().positive().required(),
   maritalStatus: Joi.string().valid('unmarried', 'married').optional().default('unmarried'),
+  gender: Joi.string().valid('male', 'female', 'other').default('other'),
 });
 
 // Validate Query Parameters
@@ -123,6 +124,7 @@ const updateEmployeeSchema = Joi.object({
   department: Joi.string().max(50),
   salary: Joi.number().positive().precision(2),
   maritalStatus: Joi.string().valid('unmarried', 'married'),
+  gender: Joi.string().valid('male', 'female', 'other'),
 }).min(1); // At least one field must be provided
 
 module.exports = {

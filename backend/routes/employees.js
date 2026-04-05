@@ -32,6 +32,7 @@ router.post("/employees", validate(employeeSchema), async (req, res) => {
     password,
     salary,
     maritalStatus,
+    gender,
   } = req.body; //validated by middleware
 
   const employeeCode = generateEmployeeCode();
@@ -59,6 +60,7 @@ router.post("/employees", validate(employeeSchema), async (req, res) => {
         password: hashedPassword,
         salary: salary,
         marital_status: maritalStatus || "unmarried",
+        gender: gender || "other",
       }
     });
 
@@ -100,6 +102,7 @@ router.get("/employees", async (req, res) => {
         department: true,
         salary: true,
         marital_status: true,
+        gender: true,
         dob: true,
         start_date: true,
         created_at: true,
@@ -137,6 +140,7 @@ router.get("/employees/:id", async (req, res) => {
         department: true,
         salary: true,
         marital_status: true,
+        gender: true,
         dob: true,
         start_date: true,
         created_at: true,

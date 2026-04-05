@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:payroll/frontend/widgets/salary_calculation.dart';
+import 'package:payroll/frontend/employee/payslip_generator.dart';
+
 import 'dart:convert';
 
 class PayslipScreen extends StatefulWidget {
@@ -97,6 +99,32 @@ class _PayslipScreenState extends State<PayslipScreen> {
             totalSalary: totalSalary,
             attendedDays: _attendedDays,
             maritalStatus: maritalStatus,
+          ),
+          const SizedBox(height: 20),
+          SizedBox(
+            width: double.infinity,
+            height: 50,
+            child: ElevatedButton.icon(
+              icon: const Icon(Icons.picture_as_pdf),
+              label: const Text(
+                'Download Official Payslip',
+                style: TextStyle(fontSize: 16),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF188984),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              onPressed: () {
+                generateAndPrintPayslip(
+                  employeeDetails: _employeeDetails!,
+                  attendedDays: _attendedDays,
+                  companyName: 'Kosh Smart Payroll Ltd.',
+                );
+              },
+            ),
           ),
         ],
       ),

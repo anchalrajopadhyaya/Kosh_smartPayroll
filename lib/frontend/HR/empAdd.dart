@@ -17,6 +17,7 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
   DateTime? dob;
   DateTime? startDate;
   String? department;
+  String? gender;
 
   final TextEditingController firstName = TextEditingController();
   final TextEditingController lastName = TextEditingController();
@@ -129,7 +130,14 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
                 _field("Last Name", lastName, hint: "last name"),
               ),
 
-              _dateField("Date of Birth", dob, () => _pickDate(context, true)),
+              _twoFields(
+                _dateField(
+                  "Date of Birth",
+                  dob,
+                  () => _pickDate(context, true),
+                ),
+                _dropdownGender(),
+              ),
 
               _section("CONTACT DETAILS"),
               _field(
@@ -320,6 +328,36 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
     );
   }
 
+  Widget _dropdownGender() {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const AppFormLabel("Gender", color: Colors.blueGrey),
+          const SizedBox(height: 6),
+          DropdownButtonFormField<String>(
+            value: gender,
+            items: const [
+              DropdownMenuItem(value: "male", child: Text("Male")),
+              DropdownMenuItem(value: "female", child: Text("Female")),
+              DropdownMenuItem(value: "other", child: Text("Other")),
+            ],
+            onChanged: (value) => setState(() => gender = value),
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: Colors.white,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: BorderSide.none,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _createEmployee() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -338,6 +376,7 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
       "citizenshipNo": citizenshipNo.text.trim(),
       "jobTitle": jobTitle.text.trim(),
       "department": department,
+      "gender": gender,
       "dob": dob?.toIso8601String(),
       "startDate": startDate?.toIso8601String(),
       "password": password.text.trim(),

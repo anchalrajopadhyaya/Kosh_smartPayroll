@@ -202,6 +202,7 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
           ],
         ),
         onTap: () {
+          // TODO: Navigate to employee detail page
           _showEmployeeDetails(context, employee);
         },
       ),
@@ -253,6 +254,7 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
                   'Marital Status',
                   employee['marital_status']?.toUpperCase(),
                 ),
+                _detailRow('Gender', employee['gender']?.toUpperCase()),
                 _detailRow('Salary', 'NPR ${employee['salary']}'),
                 const SizedBox(height: 20),
               ],
