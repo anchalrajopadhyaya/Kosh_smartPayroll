@@ -2,17 +2,59 @@ import 'package:flutter/material.dart';
 import 'package:payroll/frontend/HR/hr_feedback.dart';
 import 'package:payroll/frontend/HR/hr_leave_requests.dart';
 import 'package:payroll/frontend/HR/hr_timerequest.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'empAdd.dart';
 
-class HrDashboardScreen extends StatelessWidget {
+class HrDashboardScreen extends StatefulWidget {
   final String userName;
   final VoidCallback? onEmployeesTap;
+  final VoidCallback? onPersonalViewTap;
 
   const HrDashboardScreen({
     required this.userName,
     this.onEmployeesTap,
+    this.onPersonalViewTap,
     super.key,
   });
+
+  @override
+  State<HrDashboardScreen> createState() => _HrDashboardScreenState();
+}
+
+class _HrDashboardScreenState extends State<HrDashboardScreen> {
+  int _employeeCount = 0;
+  bool _isLoadingCount = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchEmployeeCount();
+  }
+
+  Future<void> _fetchEmployeeCount() async {
+    try {
+      final response = await http.get(
+        Uri.parse('http://10.0.2.2:3000/api/employees'),
+      );
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final List<dynamic> employees = data['employees'] ?? [];
+        if (mounted) {
+          setState(() {
+            _employeeCount = employees.length;
+            _isLoadingCount = false;
+          });
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoadingCount = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -53,7 +95,13 @@ class HrDashboardScreen extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Expanded(child: _buildToggleOption('Employee', false)),
+          Expanded(
+            child: GestureDetector(
+              onTap:
+                  widget.onPersonalViewTap, // opens HR's own personal dashboard
+              child: _buildToggleOption('Employee', false),
+            ),
+          ),
           Expanded(child: _buildToggleOption('HR', true)),
         ],
       ),
@@ -61,7 +109,8 @@ class HrDashboardScreen extends StatelessWidget {
   }
 
   Widget _buildToggleOption(String text, bool isSelected) {
-    return Container(
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
       padding: const EdgeInsets.symmetric(vertical: 10),
       decoration: BoxDecoration(
         color: isSelected ? const Color(0xFFFBA826) : Colors.transparent,
@@ -102,7 +151,7 @@ class HrDashboardScreen extends StatelessWidget {
               ),
             ),
             Text(
-              userName,
+              widget.userName,
               style: const TextStyle(
                 color: Color(0xFF141927),
                 fontSize: 18,
@@ -175,9 +224,9 @@ class HrDashboardScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 8),
-              const Text(
-                '1,248',
-                style: TextStyle(
+              Text(
+                _isLoadingCount ? '...' : _employeeCount.toString(),
+                style: const TextStyle(
                   color: Colors.white,
                   fontSize: 34,
                   fontWeight: FontWeight.bold,

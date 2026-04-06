@@ -5,6 +5,7 @@ class SalaryCalculationTable extends StatelessWidget {
   final int attendedDays;
   final int paidLeaveDays;
   final String maritalStatus;
+  final String? employmentType;
 
   const SalaryCalculationTable({
     super.key,
@@ -12,6 +13,7 @@ class SalaryCalculationTable extends StatelessWidget {
     required this.attendedDays,
     this.paidLeaveDays = 0,
     this.maritalStatus = 'unmarried',
+    this.employmentType,
   });
 
   @override
@@ -31,7 +33,9 @@ class SalaryCalculationTable extends StatelessWidget {
     double grossPayable = totalSalary - unpaidLeaveDeduction;
     double basicPayable = basicSalary - (basicDailyRate * unpaidLeaveDays);
 
-    double ssfEmployee = basicPayable * 0.11;
+    bool isIntern = employmentType?.toLowerCase() == 'intern';
+
+    double ssfEmployee = isIntern ? 0.0 : basicPayable * 0.11;
 
     // Tax Calculation Logic
     double annualGross = grossPayable * 12;
@@ -39,53 +43,57 @@ class SalaryCalculationTable extends StatelessWidget {
     double taxableIncome = annualGross - annualSsf;
 
     double annualTax = 0;
-    if (maritalStatus.toLowerCase() == 'unmarried') {
-      if (taxableIncome <= 500000) {
-        annualTax = taxableIncome * 0.01;
-      } else if (taxableIncome <= 700000) {
-        annualTax = (500000 * 0.01) + ((taxableIncome - 500000) * 0.10);
-      } else if (taxableIncome <= 1000000) {
-        annualTax =
-            (500000 * 0.01) +
-            (200000 * 0.10) +
-            ((taxableIncome - 700000) * 0.20);
-      } else if (taxableIncome <= 2000000) {
-        annualTax =
-            (500000 * 0.01) +
-            (200000 * 0.10) +
-            (300000 * 0.20) +
-            ((taxableIncome - 1000000) * 0.30);
-      } else {
-        annualTax =
-            (500000 * 0.01) +
-            (200000 * 0.10) +
-            (300000 * 0.20) +
-            (1000000 * 0.30) +
-            ((taxableIncome - 2000000) * 0.36);
-      }
+    if (isIntern) {
+      annualTax = taxableIncome * 0.01;
     } else {
-      if (taxableIncome <= 600000) {
-        annualTax = taxableIncome * 0.01;
-      } else if (taxableIncome <= 800000) {
-        annualTax = (600000 * 0.01) + ((taxableIncome - 600000) * 0.10);
-      } else if (taxableIncome <= 1100000) {
-        annualTax =
-            (600000 * 0.01) +
-            (200000 * 0.10) +
-            ((taxableIncome - 800000) * 0.20);
-      } else if (taxableIncome <= 2000000) {
-        annualTax =
-            (600000 * 0.01) +
-            (200000 * 0.10) +
-            (300000 * 0.20) +
-            ((taxableIncome - 1100000) * 0.30);
+      if (maritalStatus.toLowerCase() == 'unmarried') {
+        if (taxableIncome <= 500000) {
+          annualTax = taxableIncome * 0.01;
+        } else if (taxableIncome <= 700000) {
+          annualTax = (500000 * 0.01) + ((taxableIncome - 500000) * 0.10);
+        } else if (taxableIncome <= 1000000) {
+          annualTax =
+              (500000 * 0.01) +
+              (200000 * 0.10) +
+              ((taxableIncome - 700000) * 0.20);
+        } else if (taxableIncome <= 2000000) {
+          annualTax =
+              (500000 * 0.01) +
+              (200000 * 0.10) +
+              (300000 * 0.20) +
+              ((taxableIncome - 1000000) * 0.30);
+        } else {
+          annualTax =
+              (500000 * 0.01) +
+              (200000 * 0.10) +
+              (300000 * 0.20) +
+              (1000000 * 0.30) +
+              ((taxableIncome - 2000000) * 0.36);
+        }
       } else {
-        annualTax =
-            (600000 * 0.01) +
-            (200000 * 0.10) +
-            (300000 * 0.20) +
-            (900000 * 0.30) +
-            ((taxableIncome - 2000000) * 0.36);
+        if (taxableIncome <= 600000) {
+          annualTax = taxableIncome * 0.01;
+        } else if (taxableIncome <= 800000) {
+          annualTax = (600000 * 0.01) + ((taxableIncome - 600000) * 0.10);
+        } else if (taxableIncome <= 1100000) {
+          annualTax =
+              (600000 * 0.01) +
+              (200000 * 0.10) +
+              ((taxableIncome - 800000) * 0.20);
+        } else if (taxableIncome <= 2000000) {
+          annualTax =
+              (600000 * 0.01) +
+              (200000 * 0.10) +
+              (300000 * 0.20) +
+              ((taxableIncome - 1100000) * 0.30);
+        } else {
+          annualTax =
+              (600000 * 0.01) +
+              (200000 * 0.10) +
+              (300000 * 0.20) +
+              (900000 * 0.30) +
+              ((taxableIncome - 2000000) * 0.36);
+        }
       }
     }
 
@@ -141,13 +149,16 @@ class SalaryCalculationTable extends StatelessWidget {
                     '-${unpaidLeaveDeduction.toStringAsFixed(2)}',
                     isDeduction: true,
                   ),
+                  if (!isIntern)
+                    _buildDataRow(
+                      'SSF Deduction (11%)',
+                      '-${ssfEmployee.toStringAsFixed(2)}',
+                      isDeduction: true,
+                    ),
                   _buildDataRow(
-                    'SSF Deduction (11%)',
-                    '-${ssfEmployee.toStringAsFixed(2)}',
-                    isDeduction: true,
-                  ),
-                  _buildDataRow(
-                    'Income Tax (FY 80/81)',
+                    isIntern
+                        ? 'Intern Income Tax (1%)'
+                        : 'Income Tax (FY 80/81)',
                     '-${monthlyTax.toStringAsFixed(2)}',
                     isDeduction: true,
                   ),

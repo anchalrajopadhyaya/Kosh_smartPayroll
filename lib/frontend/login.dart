@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:payroll/frontend/state/statemngNav.dart';
+import 'package:payroll/frontend/auth/forgot_password.dart' as auth;
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -59,8 +60,15 @@ class _LoginScreenState extends State<LoginScreen> {
             return;
           }
 
-          // Navigate based on user type
-          if (userType == 'hr') {
+          // Resolve userType: backend may return 'employee' for accountants
+          // if server hasn't been restarted — use department as fallback
+          String resolvedType = userType;
+          final dept = userData['department']?.toString().toLowerCase() ?? '';
+          if (resolvedType == 'employee' && dept == 'accountant') {
+            resolvedType = 'accountant';
+          }
+
+          if (resolvedType == 'hr') {
             // Navigate to HR Dashboard with navigation bar
             Navigator.pushReplacement(
               context,
@@ -68,14 +76,18 @@ class _LoginScreenState extends State<LoginScreen> {
                 builder: (_) => HrHomeScreen(userData: userData),
               ),
             );
-          } else if (userType == 'employee') {
-            // Navigate to Employee Dashboard
+          } else if (resolvedType == 'accountant') {
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(
-                // builder: (_) => EmployeeDashboard(userData: userData),
-                builder: (_) => HomeScreen(userData: userData),
+                builder: (_) => AccountantHomeScreen(userData: userData),
               ),
+            );
+          } else if (resolvedType == 'employee') {
+            // Navigate to Employee Dashboard
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => HomeScreen(userData: userData)),
             );
           } else {
             setState(() => _error = 'Unknown user type');
@@ -276,7 +288,12 @@ class _LoginScreenState extends State<LoginScreen> {
                 //Forgot Password
                 TextButton(
                   onPressed: () {
-                    // TODO: Implement forgot password
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const auth.ForgotPasswordScreen(),
+                      ),
+                    );
                   },
                   child: const Text(
                     "Forgot Password?",

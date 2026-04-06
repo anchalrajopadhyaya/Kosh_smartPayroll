@@ -62,10 +62,15 @@ router.post("/login", async (req, res) => {
         });
       }
 
+      let uType = "employee";
+      if (employee.department && employee.department.toLowerCase() === "accountant") {
+        uType = "accountant";
+      }
+
       // Return Employee user data
       return res.status(200).json({
         message: "Login successful",
-        userType: "employee", // Important: identifies user type
+        userType: uType, // Important: identifies user type
         user: {
           id: employee.id,
           employeeCode: employee.employee_code,

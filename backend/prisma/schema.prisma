@@ -27,6 +27,7 @@ model employees {
   salary         Decimal?  @db.Decimal(10, 2)
   marital_status String?   @default("unmarried") @db.VarChar(20)
   gender         String?   @db.VarChar(20)
+  employment_type String?  @default("Full-Time") @db.VarChar(50)
   created_at     DateTime? @default(now()) @db.Timestamp(6)
   password       String?   @db.VarChar(255)
   attendance     attendance[]
@@ -95,4 +96,12 @@ model anonymous_feedback {
   category   String    @db.VarChar(50)
   status     String?   @default("Unread") @db.VarChar(20)
   created_at DateTime? @default(now()) @db.Timestamp(6)
+}
+
+model password_resets {
+  id         Int      @id @default(autoincrement())
+  email      String
+  otp        String   @db.VarChar(10)
+  expires_at DateTime
+  created_at DateTime @default(now())
 }

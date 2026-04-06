@@ -5,16 +5,19 @@ import 'package:printing/printing.dart';
 Future<void> generateAndPrintPayslip({
   required Map<String, dynamic> employeeDetails,
   required int attendedDays,
+  required int paidLeaveDays,
   required String companyName,
 }) async {
   final totalSalary =
       double.tryParse(employeeDetails['salary'].toString()) ?? 0;
   final maritalStatus = employeeDetails['marital_status'] ?? 'unmarried';
   final gender = employeeDetails['gender'] ?? 'male';
+  final employmentType = employeeDetails['employment_type'] ?? 'Full-Time';
+  bool isIntern = employmentType.toLowerCase() == 'intern';
 
   // Basic calculation logic
   const int standardMonthDays = 30;
-  int absentDays = standardMonthDays - attendedDays;
+  int absentDays = standardMonthDays - attendedDays - paidLeaveDays;
   if (absentDays < 0) absentDays = 0;
 
   double dailyRate = totalSalary / standardMonthDays;
@@ -23,7 +26,7 @@ Future<void> generateAndPrintPayslip({
   double unpaidLeaveDeduction = dailyRate * absentDays;
   double grossPayable = totalSalary - unpaidLeaveDeduction;
   double basicPayable = basicSalary - (basicDailyRate * absentDays);
-  double ssfEmployee = basicPayable * 0.11;
+  double ssfEmployee = isIntern ? 0.0 : basicPayable * 0.11;
 
   // Tax Calculation Logic
   double annualGross = grossPayable * 12;
@@ -31,54 +34,63 @@ Future<void> generateAndPrintPayslip({
   double taxableIncome = annualGross - annualSsf;
 
   double annualTax = 0;
-  if (maritalStatus.toLowerCase() == 'unmarried') {
-    if (taxableIncome <= 500000) {
-      annualTax = taxableIncome * 0.01;
-    } else if (taxableIncome <= 700000) {
-      annualTax = (500000 * 0.01) + ((taxableIncome - 500000) * 0.10);
-    } else if (taxableIncome <= 1000000) {
-      annualTax =
-          (500000 * 0.01) + (200000 * 0.10) + ((taxableIncome - 700000) * 0.20);
-    } else if (taxableIncome <= 2000000) {
-      annualTax =
-          (500000 * 0.01) +
-          (200000 * 0.10) +
-          (300000 * 0.20) +
-          ((taxableIncome - 1000000) * 0.30);
-    } else {
-      annualTax =
-          (500000 * 0.01) +
-          (200000 * 0.10) +
-          (300000 * 0.20) +
-          (1000000 * 0.30) +
-          ((taxableIncome - 2000000) * 0.36);
-    }
+  if (isIntern) {
+    annualTax = taxableIncome * 0.01;
   } else {
-    if (taxableIncome <= 600000) {
-      annualTax = taxableIncome * 0.01;
-    } else if (taxableIncome <= 800000) {
-      annualTax = (600000 * 0.01) + ((taxableIncome - 600000) * 0.10);
-    } else if (taxableIncome <= 1100000) {
-      annualTax =
-          (600000 * 0.01) + (200000 * 0.10) + ((taxableIncome - 800000) * 0.20);
-    } else if (taxableIncome <= 2000000) {
-      annualTax =
-          (600000 * 0.01) +
-          (200000 * 0.10) +
-          (300000 * 0.20) +
-          ((taxableIncome - 1100000) * 0.30);
+    if (maritalStatus.toLowerCase() == 'unmarried') {
+      if (taxableIncome <= 500000) {
+        annualTax = taxableIncome * 0.01;
+      } else if (taxableIncome <= 700000) {
+        annualTax = (500000 * 0.01) + ((taxableIncome - 500000) * 0.10);
+      } else if (taxableIncome <= 1000000) {
+        annualTax =
+            (500000 * 0.01) +
+            (200000 * 0.10) +
+            ((taxableIncome - 700000) * 0.20);
+      } else if (taxableIncome <= 2000000) {
+        annualTax =
+            (500000 * 0.01) +
+            (200000 * 0.10) +
+            (300000 * 0.20) +
+            ((taxableIncome - 1000000) * 0.30);
+      } else {
+        annualTax =
+            (500000 * 0.01) +
+            (200000 * 0.10) +
+            (300000 * 0.20) +
+            (1000000 * 0.30) +
+            ((taxableIncome - 2000000) * 0.36);
+      }
     } else {
-      annualTax =
-          (600000 * 0.01) +
-          (200000 * 0.10) +
-          (300000 * 0.20) +
-          (900000 * 0.30) +
-          ((taxableIncome - 2000000) * 0.36);
+      if (taxableIncome <= 600000) {
+        annualTax = taxableIncome * 0.01;
+      } else if (taxableIncome <= 800000) {
+        annualTax = (600000 * 0.01) + ((taxableIncome - 600000) * 0.10);
+      } else if (taxableIncome <= 1100000) {
+        annualTax =
+            (600000 * 0.01) +
+            (200000 * 0.10) +
+            ((taxableIncome - 800000) * 0.20);
+      } else if (taxableIncome <= 2000000) {
+        annualTax =
+            (600000 * 0.01) +
+            (200000 * 0.10) +
+            (300000 * 0.20) +
+            ((taxableIncome - 1100000) * 0.30);
+      } else {
+        annualTax =
+            (600000 * 0.01) +
+            (200000 * 0.10) +
+            (300000 * 0.20) +
+            (900000 * 0.30) +
+            ((taxableIncome - 2000000) * 0.36);
+      }
     }
   }
 
   double rebateAmount = 0;
-  if (maritalStatus.toLowerCase() == 'unmarried' &&
+  if (!isIntern &&
+      maritalStatus.toLowerCase() == 'unmarried' &&
       gender.toLowerCase() == 'female') {
     rebateAmount = annualTax * 0.10;
     annualTax -= rebateAmount;
@@ -198,13 +210,22 @@ Future<void> generateAndPrintPayslip({
                     'Unpaid Leave Deductions (-$absentDays Days)',
                     '-${unpaidLeaveDeduction.toStringAsFixed(2)}',
                   ],
-                  ['SSF Deduction (11%)', '-${ssfEmployee.toStringAsFixed(2)}'],
+                  if (!isIntern)
+                    [
+                      'SSF Deduction (11%)',
+                      '-${ssfEmployee.toStringAsFixed(2)}',
+                    ],
                   if (rebateAmount > 0)
                     [
                       'Female Tax Rebate (10%)',
                       '-${(rebateAmount / 12).toStringAsFixed(2)}',
                     ],
-                  ['Income Tax (Monthly)', '-${monthlyTax.toStringAsFixed(2)}'],
+                  [
+                    isIntern
+                        ? 'Intern Income Tax (1%)'
+                        : 'Income Tax (Monthly)',
+                    '-${monthlyTax.toStringAsFixed(2)}',
+                  ],
                 ],
               ),
               pw.SizedBox(height: 20),

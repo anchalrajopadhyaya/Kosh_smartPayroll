@@ -18,6 +18,8 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
   DateTime? startDate;
   String? department;
   String? gender;
+  String? maritalStatus;
+  String? employmentType = "Full-Time";
 
   final TextEditingController firstName = TextEditingController();
   final TextEditingController lastName = TextEditingController();
@@ -139,6 +141,8 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
                 _dropdownGender(),
               ),
 
+              _dropdownMaritalStatus(),
+
               _section("CONTACT DETAILS"),
               _field(
                 "Email Address",
@@ -174,7 +178,7 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
 
               _field("Job Title", jobTitle, hint: "Technical Lead"),
 
-              _dropdown(),
+              _twoFields(_dropdown(), _dropdownEmploymentType()),
 
               _dateField(
                 "Start Date",
@@ -328,6 +332,36 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
     );
   }
 
+  Widget _dropdownEmploymentType() {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const AppFormLabel("Employment Type", color: Colors.blueGrey),
+          const SizedBox(height: 6),
+          DropdownButtonFormField<String>(
+            value: employmentType,
+            items: const [
+              DropdownMenuItem(value: "Full-Time", child: Text("Full-Time")),
+              DropdownMenuItem(value: "Part-Time", child: Text("Part-Time")),
+              DropdownMenuItem(value: "Intern", child: Text("Intern")),
+            ],
+            onChanged: (value) => setState(() => employmentType = value),
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: Colors.white,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: BorderSide.none,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _dropdownGender() {
     return Padding(
       padding: const EdgeInsets.only(bottom: 14),
@@ -344,6 +378,35 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
               DropdownMenuItem(value: "other", child: Text("Other")),
             ],
             onChanged: (value) => setState(() => gender = value),
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: Colors.white,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: BorderSide.none,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _dropdownMaritalStatus() {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const AppFormLabel("Marital Status", color: Colors.blueGrey),
+          const SizedBox(height: 6),
+          DropdownButtonFormField<String>(
+            value: maritalStatus,
+            items: const [
+              DropdownMenuItem(value: "unmarried", child: Text("Unmarried")),
+              DropdownMenuItem(value: "married", child: Text("Married")),
+            ],
+            onChanged: (value) => setState(() => maritalStatus = value),
             decoration: InputDecoration(
               filled: true,
               fillColor: Colors.white,
@@ -377,6 +440,8 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
       "jobTitle": jobTitle.text.trim(),
       "department": department,
       "gender": gender,
+      "maritalStatus": maritalStatus,
+      "employmentType": employmentType,
       "dob": dob?.toIso8601String(),
       "startDate": startDate?.toIso8601String(),
       "password": password.text.trim(),

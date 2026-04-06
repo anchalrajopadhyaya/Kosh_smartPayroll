@@ -21,6 +21,8 @@ class UserAttendanceList extends StatefulWidget {
 
 class _UserAttendanceListState extends State<UserAttendanceList> {
   List<dynamic> _attendanceHistory = [];
+  int _paidLeaveDays = 0;
+  int _absentDays = 0;
   Map<String, dynamic>? _employeeDetails;
   bool _isLoading = true;
 
@@ -40,12 +42,55 @@ class _UserAttendanceListState extends State<UserAttendanceList> {
       final employeeFuture = http.get(
         Uri.parse('http://10.0.2.2:3000/api/employees/${widget.userId}'),
       );
+      final leaveFuture = http.get(
+        Uri.parse('http://10.0.2.2:3000/api/leave/employee/${widget.userId}'),
+      );
 
-      final results = await Future.wait([historyFuture, employeeFuture]);
+      final results = await Future.wait([
+        historyFuture,
+        employeeFuture,
+        leaveFuture,
+      ]);
 
-      if (results[0].statusCode == 200 && results[1].statusCode == 200) {
+      if (results[0].statusCode == 200 &&
+          results[1].statusCode == 200 &&
+          results[2].statusCode == 200) {
+        final List<dynamic> history = jsonDecode(results[0].body);
+        final List<dynamic> leaves = jsonDecode(results[2].body);
+
+        final DateTime now = DateTime.now();
+
+        final List<dynamic> currentMonthHistory =
+            history.where((item) {
+              DateTime date = DateTime.parse(item['date']);
+              return date.year == now.year && date.month == now.month;
+            }).toList();
+
+        int approvedLeaveDays = 0;
+        for (var leave in leaves) {
+          if (leave['status'] == 'Approved') {
+            DateTime start = DateTime.parse(leave['start_date']);
+            DateTime end = DateTime.parse(leave['end_date']);
+
+            for (
+              DateTime day = start;
+              day.isBefore(end.add(const Duration(days: 1)));
+              day = day.add(const Duration(days: 1))
+            ) {
+              if (day.year == now.year && day.month == now.month) {
+                approvedLeaveDays++;
+              }
+            }
+          }
+        }
+
+        int absent = 30 - currentMonthHistory.length - approvedLeaveDays;
+        if (absent < 0) absent = 0;
+
         setState(() {
-          _attendanceHistory = jsonDecode(results[0].body);
+          _attendanceHistory = currentMonthHistory;
+          _paidLeaveDays = approvedLeaveDays;
+          _absentDays = absent;
           _employeeDetails = jsonDecode(results[1].body);
           _isLoading = false;
         });
@@ -86,8 +131,16 @@ class _UserAttendanceListState extends State<UserAttendanceList> {
                   count: _attendanceHistory.length,
                   color: Colors.green,
                 ),
-                const SummaryCard(label: "Absent", count: 0, color: Colors.red),
-                const SummaryCard(label: "Leave", count: 0, color: Colors.blue),
+                SummaryCard(
+                  label: "Absent",
+                  count: _absentDays,
+                  color: Colors.red,
+                ),
+                SummaryCard(
+                  label: "Leave",
+                  count: _paidLeaveDays,
+                  color: Colors.blue,
+                ),
               ],
             ),
             const SizedBox(height: 16),
@@ -99,8 +152,10 @@ class _UserAttendanceListState extends State<UserAttendanceList> {
                     double.tryParse(_employeeDetails!['salary'].toString()) ??
                     0,
                 attendedDays: _attendanceHistory.length,
+                paidLeaveDays: _paidLeaveDays,
                 maritalStatus:
                     _employeeDetails!['marital_status'] ?? 'unmarried',
+                employmentType: _employeeDetails!['employment_type'],
               ),
             const SizedBox(height: 24),
             const Text(

@@ -33,6 +33,7 @@ router.post("/employees", validate(employeeSchema), async (req, res) => {
     salary,
     maritalStatus,
     gender,
+    employmentType,
   } = req.body; //validated by middleware
 
   const employeeCode = generateEmployeeCode();
@@ -61,6 +62,7 @@ router.post("/employees", validate(employeeSchema), async (req, res) => {
         salary: salary,
         marital_status: maritalStatus || "unmarried",
         gender: gender || "other",
+        employment_type: employmentType || "Full-Time",
       }
     });
 
@@ -103,6 +105,7 @@ router.get("/employees", async (req, res) => {
         salary: true,
         marital_status: true,
         gender: true,
+        employment_type: true,
         dob: true,
         start_date: true,
         created_at: true,
@@ -116,6 +119,46 @@ router.get("/employees", async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Server error" });
+  }
+});
+
+//Get employee by email (used for HR personal view lookup)
+router.get("/employees/by-email/:email", async (req, res) => {
+  const { email } = req.params;
+  try {
+    const employee = await prisma.employees.findUnique({
+      where: { email: email },
+      select: {
+        id: true,
+        employee_code: true,
+        first_name: true,
+        last_name: true,
+        email: true,
+        phone: true,
+        city: true,
+        district: true,
+        province: true,
+        ward: true,
+        job_title: true,
+        department: true,
+        salary: true,
+        marital_status: true,
+        gender: true,
+        employment_type: true,
+        dob: true,
+        start_date: true,
+        created_at: true,
+      }
+    });
+
+    if (!employee) {
+      return res.status(404).json({ message: "Employee not found" });
+    }
+
+    res.status(200).json(employee);
+  } catch (err) {
+    console.error("Error fetching employee by email:", err);
+    res.status(500).json({ error: "Server error fetching employee" });
   }
 });
 
@@ -141,6 +184,7 @@ router.get("/employees/:id", async (req, res) => {
         salary: true,
         marital_status: true,
         gender: true,
+        employment_type: true,
         dob: true,
         start_date: true,
         created_at: true,
