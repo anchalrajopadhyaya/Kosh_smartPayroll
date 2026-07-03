@@ -2,104 +2,26 @@ import 'package:flutter/material.dart';
 
 class SalaryCalculationTable extends StatelessWidget {
   final double totalSalary;
-  final int attendedDays;
-  final int paidLeaveDays;
-  final String maritalStatus;
-  final String? employmentType;
+  final int unpaidLeaves;
+  final double unpaidDeduction;
+  final double ssfEmployee;
+  final double tax;
+  final double netSalary;
+  final bool isIntern;
 
   const SalaryCalculationTable({
     super.key,
     required this.totalSalary,
-    required this.attendedDays,
-    this.paidLeaveDays = 0,
-    this.maritalStatus = 'unmarried',
-    this.employmentType,
+    required this.unpaidLeaves,
+    required this.unpaidDeduction,
+    required this.ssfEmployee,
+    required this.tax,
+    required this.netSalary,
+    required this.isIntern,
   });
 
   @override
   Widget build(BuildContext context) {
-    // Basic calculation logic
-    const int standardMonthDays = 30;
-
-    int absentDays = standardMonthDays - attendedDays - paidLeaveDays;
-    if (absentDays < 0) absentDays = 0;
-    int unpaidLeaveDays = absentDays;
-
-    double dailyRate = totalSalary / standardMonthDays;
-    double basicSalary = totalSalary * 0.6;
-    double basicDailyRate = basicSalary / standardMonthDays;
-
-    double unpaidLeaveDeduction = dailyRate * unpaidLeaveDays;
-    double grossPayable = totalSalary - unpaidLeaveDeduction;
-    double basicPayable = basicSalary - (basicDailyRate * unpaidLeaveDays);
-
-    bool isIntern = employmentType?.toLowerCase() == 'intern';
-
-    double ssfEmployee = isIntern ? 0.0 : basicPayable * 0.11;
-
-    // Tax Calculation Logic
-    double annualGross = grossPayable * 12;
-    double annualSsf = ssfEmployee * 12;
-    double taxableIncome = annualGross - annualSsf;
-
-    double annualTax = 0;
-    if (isIntern) {
-      annualTax = taxableIncome * 0.01;
-    } else {
-      if (maritalStatus.toLowerCase() == 'unmarried') {
-        if (taxableIncome <= 500000) {
-          annualTax = taxableIncome * 0.01;
-        } else if (taxableIncome <= 700000) {
-          annualTax = (500000 * 0.01) + ((taxableIncome - 500000) * 0.10);
-        } else if (taxableIncome <= 1000000) {
-          annualTax =
-              (500000 * 0.01) +
-              (200000 * 0.10) +
-              ((taxableIncome - 700000) * 0.20);
-        } else if (taxableIncome <= 2000000) {
-          annualTax =
-              (500000 * 0.01) +
-              (200000 * 0.10) +
-              (300000 * 0.20) +
-              ((taxableIncome - 1000000) * 0.30);
-        } else {
-          annualTax =
-              (500000 * 0.01) +
-              (200000 * 0.10) +
-              (300000 * 0.20) +
-              (1000000 * 0.30) +
-              ((taxableIncome - 2000000) * 0.36);
-        }
-      } else {
-        if (taxableIncome <= 600000) {
-          annualTax = taxableIncome * 0.01;
-        } else if (taxableIncome <= 800000) {
-          annualTax = (600000 * 0.01) + ((taxableIncome - 600000) * 0.10);
-        } else if (taxableIncome <= 1100000) {
-          annualTax =
-              (600000 * 0.01) +
-              (200000 * 0.10) +
-              ((taxableIncome - 800000) * 0.20);
-        } else if (taxableIncome <= 2000000) {
-          annualTax =
-              (600000 * 0.01) +
-              (200000 * 0.10) +
-              (300000 * 0.20) +
-              ((taxableIncome - 1100000) * 0.30);
-        } else {
-          annualTax =
-              (600000 * 0.01) +
-              (200000 * 0.10) +
-              (300000 * 0.20) +
-              (900000 * 0.30) +
-              ((taxableIncome - 2000000) * 0.36);
-        }
-      }
-    }
-
-    double monthlyTax = annualTax / 12;
-    double netTakeHome = grossPayable - ssfEmployee - monthlyTax;
-
     return Card(
       elevation: 2,
       margin: const EdgeInsets.symmetric(vertical: 12),
@@ -145,8 +67,8 @@ class SalaryCalculationTable extends StatelessWidget {
                     totalSalary.toStringAsFixed(2),
                   ),
                   _buildDataRow(
-                    'Unpaid Leave (-$unpaidLeaveDays Days)',
-                    '-${unpaidLeaveDeduction.toStringAsFixed(2)}',
+                    'Unpaid Leave (-$unpaidLeaves Days)',
+                    '-${unpaidDeduction.toStringAsFixed(2)}',
                     isDeduction: true,
                   ),
                   if (!isIntern)
@@ -159,12 +81,12 @@ class SalaryCalculationTable extends StatelessWidget {
                     isIntern
                         ? 'Intern Income Tax (1%)'
                         : 'Income Tax (FY 80/81)',
-                    '-${monthlyTax.toStringAsFixed(2)}',
+                    '-${tax.toStringAsFixed(2)}',
                     isDeduction: true,
                   ),
                   _buildDataRow(
                     'Final Take Home Pay',
-                    netTakeHome.toStringAsFixed(2),
+                    netSalary.toStringAsFixed(2),
                     isTotal: true,
                   ),
                 ],

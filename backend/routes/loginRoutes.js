@@ -17,7 +17,7 @@ router.post("/login", async (req, res) => {
   try {
     // First, check if user is an HR user (in users table)
     const hrResult = await pool.query(
-      "SELECT id, name, email, password, role FROM users WHERE email = $1",
+      "SELECT id, name, email, password, role, must_change_password FROM users WHERE email = $1",
       [email]
     );
 
@@ -41,13 +41,14 @@ router.post("/login", async (req, res) => {
           name: hrUser.name,
           email: hrUser.email,
           role: hrUser.role || "hr",
+          mustChangePassword: hrUser.must_change_password,
         },
       });
     }
 
     // If not HR, check if user is an Employee
     const empResult = await pool.query(
-      "SELECT id, employee_code, first_name, last_name, email, password, job_title, department, salary FROM employees WHERE email = $1",
+      "SELECT id, employee_code, first_name, last_name, email, password, job_title, department, salary, must_change_password FROM employees WHERE email = $1",
       [email]
     );
 
@@ -81,6 +82,7 @@ router.post("/login", async (req, res) => {
           jobTitle: employee.job_title,
           department: employee.department,
           salary: employee.salary,
+          mustChangePassword: employee.must_change_password,
         },
       });
     }

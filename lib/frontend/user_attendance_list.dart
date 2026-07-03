@@ -21,9 +21,7 @@ class UserAttendanceList extends StatefulWidget {
 
 class _UserAttendanceListState extends State<UserAttendanceList> {
   List<dynamic> _attendanceHistory = [];
-  int _paidLeaveDays = 0;
-  int _absentDays = 0;
-  Map<String, dynamic>? _employeeDetails;
+  Map<String, dynamic>? _payrollDetails;
   bool _isLoading = true;
 
   @override
@@ -34,31 +32,24 @@ class _UserAttendanceListState extends State<UserAttendanceList> {
 
   Future<void> _fetchData() async {
     try {
+      final DateTime now = DateTime.now();
+
       final historyFuture = http.get(
         Uri.parse(
           'http://10.0.2.2:3000/api/attendance/history/${widget.userId}',
         ),
       );
-      final employeeFuture = http.get(
-        Uri.parse('http://10.0.2.2:3000/api/employees/${widget.userId}'),
-      );
-      final leaveFuture = http.get(
-        Uri.parse('http://10.0.2.2:3000/api/leave/employee/${widget.userId}'),
+      final payrollFuture = http.get(
+        Uri.parse(
+          'http://10.0.2.2:3000/api/payroll/calculate/${widget.userId}?month=${now.month}&year=${now.year}',
+        ),
       );
 
-      final results = await Future.wait([
-        historyFuture,
-        employeeFuture,
-        leaveFuture,
-      ]);
+      final results = await Future.wait([historyFuture, payrollFuture]);
 
-      if (results[0].statusCode == 200 &&
-          results[1].statusCode == 200 &&
-          results[2].statusCode == 200) {
+      if (results[0].statusCode == 200 && results[1].statusCode == 200) {
         final List<dynamic> history = jsonDecode(results[0].body);
-        final List<dynamic> leaves = jsonDecode(results[2].body);
-
-        final DateTime now = DateTime.now();
+        final Map<String, dynamic> payroll = jsonDecode(results[1].body);
 
         final List<dynamic> currentMonthHistory =
             history.where((item) {
@@ -66,32 +57,9 @@ class _UserAttendanceListState extends State<UserAttendanceList> {
               return date.year == now.year && date.month == now.month;
             }).toList();
 
-        int approvedLeaveDays = 0;
-        for (var leave in leaves) {
-          if (leave['status'] == 'Approved') {
-            DateTime start = DateTime.parse(leave['start_date']);
-            DateTime end = DateTime.parse(leave['end_date']);
-
-            for (
-              DateTime day = start;
-              day.isBefore(end.add(const Duration(days: 1)));
-              day = day.add(const Duration(days: 1))
-            ) {
-              if (day.year == now.year && day.month == now.month) {
-                approvedLeaveDays++;
-              }
-            }
-          }
-        }
-
-        int absent = 30 - currentMonthHistory.length - approvedLeaveDays;
-        if (absent < 0) absent = 0;
-
         setState(() {
           _attendanceHistory = currentMonthHistory;
-          _paidLeaveDays = approvedLeaveDays;
-          _absentDays = absent;
-          _employeeDetails = jsonDecode(results[1].body);
+          _payrollDetails = payroll;
           _isLoading = false;
         });
       } else {
@@ -114,6 +82,11 @@ class _UserAttendanceListState extends State<UserAttendanceList> {
       );
     }
 
+    final int attendedCount =
+        _payrollDetails?['attendance'] ?? _attendanceHistory.length;
+    final int unpaidLeaves = _payrollDetails?['unpaidLeaves'] ?? 0;
+    final int paidLeaves = _payrollDetails?['paidLeaves'] ?? 0;
+
     return RefreshIndicator(
       onRefresh: _fetchData,
       child: SingleChildScrollView(
@@ -128,34 +101,45 @@ class _UserAttendanceListState extends State<UserAttendanceList> {
               children: [
                 SummaryCard(
                   label: "Present",
-                  count: _attendanceHistory.length,
+                  count: attendedCount,
                   color: Colors.green,
                 ),
                 SummaryCard(
                   label: "Absent",
-                  count: _absentDays,
+                  count: unpaidLeaves,
                   color: Colors.red,
                 ),
                 SummaryCard(
                   label: "Leave",
-                  count: _paidLeaveDays,
+                  count: paidLeaves,
                   color: Colors.blue,
                 ),
               ],
             ),
             const SizedBox(height: 16),
-            if (widget.showSalaryBox &&
-                _employeeDetails != null &&
-                _employeeDetails!['salary'] != null)
+            if (widget.showSalaryBox && _payrollDetails != null)
               SalaryCalculationTable(
                 totalSalary:
-                    double.tryParse(_employeeDetails!['salary'].toString()) ??
+                    double.tryParse(
+                      _payrollDetails!['totalSalary'].toString(),
+                    ) ??
                     0,
-                attendedDays: _attendanceHistory.length,
-                paidLeaveDays: _paidLeaveDays,
-                maritalStatus:
-                    _employeeDetails!['marital_status'] ?? 'unmarried',
-                employmentType: _employeeDetails!['employment_type'],
+                unpaidLeaves: unpaidLeaves,
+                unpaidDeduction:
+                    double.tryParse(
+                      _payrollDetails!['unpaidDeduction'].toString(),
+                    ) ??
+                    0,
+                ssfEmployee:
+                    double.tryParse(
+                      _payrollDetails!['ssfEmployee'].toString(),
+                    ) ??
+                    0,
+                tax: double.tryParse(_payrollDetails!['tax'].toString()) ?? 0,
+                netSalary:
+                    double.tryParse(_payrollDetails!['netSalary'].toString()) ??
+                    0,
+                isIntern: _payrollDetails!['isIntern'] ?? false,
               ),
             const SizedBox(height: 24),
             const Text(
@@ -294,7 +278,6 @@ class AttendanceCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Date and status
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -329,7 +312,6 @@ class AttendanceCard extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: 8),
-              // Check In/Out
               Row(
                 children: [
                   Expanded(

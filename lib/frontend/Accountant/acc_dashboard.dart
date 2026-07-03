@@ -8,8 +8,8 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:intl/intl.dart';
 import 'package:payroll/frontend/notification.dart';
-import 'package:payroll/frontend/widgets/Accountant/monthly_report.dart';
-import 'package:payroll/frontend/widgets/Accountant/nav_accountant.dart';
+import 'package:payroll/frontend/Accountant/monthly_report.dart';
+import 'package:payroll/frontend/Accountant/nav_accountant.dart';
 import 'package:payroll/frontend/widgets/daily_punchesDialog.dart';
 import 'package:payroll/frontend/employee/applyLeave.dart';
 import 'package:payroll/frontend/employee/emp_feedback.dart';
@@ -233,7 +233,9 @@ class _AccountantHomeContentState extends State<_AccountantHomeContent> {
             onPressed:
                 () => Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => const notification()),
+                  MaterialPageRoute(
+                    builder: (_) => notification(userData: widget.userData),
+                  ),
                 ),
           ),
         ],

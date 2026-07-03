@@ -2,17 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:payroll/frontend/HR/hr_feedback.dart';
 import 'package:payroll/frontend/HR/hr_leave_requests.dart';
 import 'package:payroll/frontend/HR/hr_timerequest.dart';
+import 'package:payroll/frontend/HR/hr_profile_requests.dart';
+import 'package:payroll/frontend/notification.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'empAdd.dart';
 
 class HrDashboardScreen extends StatefulWidget {
-  final String userName;
+  final Map<String, dynamic> userData;
   final VoidCallback? onEmployeesTap;
   final VoidCallback? onPersonalViewTap;
 
   const HrDashboardScreen({
-    required this.userName,
+    required this.userData,
     this.onEmployeesTap,
     this.onPersonalViewTap,
     super.key,
@@ -75,10 +77,10 @@ class _HrDashboardScreenState extends State<HrDashboardScreen> {
               const SizedBox(height: 24),
               _buildActionRow(context),
               const SizedBox(height: 24),
-              _buildPendingApprovalsHeader(),
-              const SizedBox(height: 16),
-              _buildPendingApprovalsList(),
-              const SizedBox(height: 20),
+              // _buildPendingApprovalsHeader(),
+              // const SizedBox(height: 16),
+              // _buildPendingApprovalsList(),
+              // const SizedBox(height: 20),
             ],
           ),
         ),
@@ -151,7 +153,7 @@ class _HrDashboardScreenState extends State<HrDashboardScreen> {
               ),
             ),
             Text(
-              widget.userName,
+              widget.userData['name'] ?? 'User',
               style: const TextStyle(
                 color: Color(0xFF141927),
                 fontSize: 18,
@@ -161,32 +163,42 @@ class _HrDashboardScreenState extends State<HrDashboardScreen> {
           ],
         ),
         const Spacer(),
-        Stack(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
+        GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => notification(userData: widget.userData),
               ),
-              child: const Icon(
-                Icons.notifications_none,
-                color: Colors.black87,
-              ),
-            ),
-            Positioned(
-              right: 2,
-              top: 2,
-              child: Container(
-                width: 8,
-                height: 8,
+            );
+          },
+          child: Stack(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
                 decoration: const BoxDecoration(
-                  color: Colors.red,
+                  color: Colors.white,
                   shape: BoxShape.circle,
                 ),
+                child: const Icon(
+                  Icons.notifications_none,
+                  color: Colors.black87,
+                ),
               ),
-            ),
-          ],
+              Positioned(
+                right: 2,
+                top: 2,
+                child: Container(
+                  width: 8,
+                  height: 8,
+                  decoration: const BoxDecoration(
+                    color: Colors.red,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ],
     );
@@ -264,37 +276,65 @@ class _HrDashboardScreenState extends State<HrDashboardScreen> {
   }
 
   Widget _buildActionRow(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return Column(
       children: [
-        _buildActionItem(Icons.person_add_alt_1_outlined, 'Add Staff', () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const AddEmployeeScreen()),
-          );
-        }),
-        _buildActionItem(Icons.edit_calendar_outlined, 'Leave Req', () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const HrLeaveRequestsScreen(),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            _buildActionItem(Icons.person_add_alt_1_outlined, 'Add Staff', () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const AddEmployeeScreen(),
+                ),
+              );
+            }),
+            _buildActionItem(Icons.edit_calendar_outlined, 'Leave Req', () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const HrLeaveRequestsScreen(),
+                ),
+              );
+            }),
+            _buildActionItem(Icons.access_time, 'Timesheets', () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const HrTimeRequestsScreen(),
+                ),
+              );
+            }),
+          ],
+        ),
+        const SizedBox(height: 16),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            _buildActionItem(Icons.feedback_outlined, 'Feedback', () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const HrFeedbackScreen(),
+                ),
+              );
+            }),
+            _buildActionItem(Icons.manage_accounts_outlined, 'Profile Req', () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const HrProfileRequestsScreen(),
+                ),
+              );
+            }),
+            Opacity(
+              opacity: 0,
+              child: IgnorePointer(
+                child: _buildActionItem(Icons.add, '', null),
+              ),
             ),
-          );
-        }),
-        _buildActionItem(Icons.access_time, 'Timesheets', () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const HrTimeRequestsScreen(),
-            ),
-          );
-        }),
-        _buildActionItem(Icons.feedback_outlined, 'Feedback', () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const HrFeedbackScreen()),
-          );
-        }),
+          ],
+        ),
       ],
     );
   }
@@ -333,42 +373,42 @@ class _HrDashboardScreenState extends State<HrDashboardScreen> {
     );
   }
 
-  Widget _buildPendingApprovalsHeader() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
-        const Text(
-          'Pending Approvals',
-          style: TextStyle(
-            color: Color(0xFF141927),
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        Text(
-          'View All (8)',
-          style: TextStyle(
-            color: const Color(0xFFFBA826),
-            fontSize: 14,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ],
-    );
-  }
+  // Widget _buildPendingApprovalsHeader() {
+  //   return Row(
+  //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //     crossAxisAlignment: CrossAxisAlignment.end,
+  //     children: [
+  //       const Text(
+  //         'Pending Approvals',
+  //         style: TextStyle(
+  //           color: Color(0xFF141927),
+  //           fontSize: 18,
+  //           fontWeight: FontWeight.bold,
+  //         ),
+  //       ),
+  //       Text(
+  //         'View All (8)',
+  //         style: TextStyle(
+  //           color: const Color(0xFFFBA826),
+  //           fontSize: 14,
+  //           fontWeight: FontWeight.bold,
+  //         ),
+  //       ),
+  //     ],
+  //   );
+  // }
 
-  Widget _buildPendingApprovalsList() {
-    return Column(
-      children: [
-        _buildApprovalItem(name: 'Michael Chen', type: 'Annual Leave (3 Days)'),
-        const SizedBox(height: 12),
-        _buildApprovalItem(name: 'Jessica Davis', type: 'Sick Leave (1 Day)'),
-        const SizedBox(height: 12),
-        _buildApprovalItem(name: 'Carlos Rodriguez', type: 'Profile Update'),
-      ],
-    );
-  }
+  // Widget _buildPendingApprovalsList() {
+  //   return Column(
+  //     children: [
+  //       _buildApprovalItem(name: 'Michael Chen', type: 'Annual Leave (3 Days)'),
+  //       const SizedBox(height: 12),
+  //       _buildApprovalItem(name: 'Jessica Davis', type: 'Sick Leave (1 Day)'),
+  //       const SizedBox(height: 12),
+  //       _buildApprovalItem(name: 'Carlos Rodriguez', type: 'Profile Update'),
+  //     ],
+  //   );
+  // }
 
   Widget _buildApprovalItem({required String name, required String type}) {
     return Container(

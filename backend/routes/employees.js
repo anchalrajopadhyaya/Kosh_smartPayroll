@@ -63,6 +63,7 @@ router.post("/employees", validate(employeeSchema), async (req, res) => {
         marital_status: maritalStatus || "unmarried",
         gender: gender || "other",
         employment_type: employmentType || "Full-Time",
+        must_change_password: true,
       }
     });
 
@@ -109,6 +110,8 @@ router.get("/employees", async (req, res) => {
         dob: true,
         start_date: true,
         created_at: true,
+        pan: true,
+        citizenship_no: true,
       }
     });
 
@@ -148,6 +151,8 @@ router.get("/employees/by-email/:email", async (req, res) => {
         dob: true,
         start_date: true,
         created_at: true,
+        pan: true,
+        citizenship_no: true,
       }
     });
 
@@ -188,6 +193,8 @@ router.get("/employees/:id", async (req, res) => {
         dob: true,
         start_date: true,
         created_at: true,
+        pan: true,
+        citizenship_no: true,
       }
     });
 
@@ -199,6 +206,37 @@ router.get("/employees/:id", async (req, res) => {
   } catch (err) {
     console.error("Error fetching employee:", err);
     res.status(500).json({ error: "Server error fetching employee" });
+  }
+});
+
+//Delete employee and dependencies
+router.delete("/employees/:id", async (req, res) => {
+  const { id } = req.params;
+  const empId = parseInt(id);
+
+  try {
+    const employee = await prisma.employees.findUnique({
+      where: { id: empId }
+    });
+
+    if (!employee) {
+      return res.status(404).json({ message: "Employee not found" });
+    }
+
+    // Delete in dependency order using transaction
+    await prisma.$transaction([
+      prisma.attendance.deleteMany({ where: { employee_id: empId } }),
+      prisma.leave_requests.deleteMany({ where: { employee_id: empId } }),
+      prisma.time_requests.deleteMany({ where: { employee_id: empId } }),
+      prisma.notifications.deleteMany({ where: { employee_id: empId } }),
+      prisma.profile_update_requests.deleteMany({ where: { employee_id: empId } }),
+      prisma.employees.delete({ where: { id: empId } })
+    ]);
+
+    res.status(200).json({ message: "Employee deleted successfully" });
+  } catch (err) {
+    console.error("Error deleting employee:", err);
+    res.status(500).json({ error: "Server error deleting employee" });
   }
 });
 

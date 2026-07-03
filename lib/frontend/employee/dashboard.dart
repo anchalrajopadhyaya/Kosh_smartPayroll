@@ -166,7 +166,9 @@ class EmployeeDashboardState extends State<EmployeeDashboard> {
             onPressed:
                 () => Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => const notification()),
+                  MaterialPageRoute(
+                    builder: (_) => notification(userData: widget.userData),
+                  ),
                 ),
           ),
         ],
@@ -330,7 +332,6 @@ class EmployeeDashboardState extends State<EmployeeDashboard> {
     );
   }
 
-  // ... (Helper methods: _buildSalaryCard, _leaveBox, etc. would be roughly same as before or refactored)
   Widget _buildSalaryCard() {
     return Container(
       padding: const EdgeInsets.all(20),

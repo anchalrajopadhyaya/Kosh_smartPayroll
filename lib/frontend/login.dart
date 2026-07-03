@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:payroll/frontend/state/statemngNav.dart';
 import 'package:payroll/frontend/auth/forgot_password.dart' as auth;
+import 'package:payroll/frontend/auth/first_time_setup.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -66,6 +67,21 @@ class _LoginScreenState extends State<LoginScreen> {
           final dept = userData['department']?.toString().toLowerCase() ?? '';
           if (resolvedType == 'employee' && dept == 'accountant') {
             resolvedType = 'accountant';
+          }
+
+          final mustChange = userData['mustChangePassword'] ?? false;
+          if (mustChange) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder:
+                    (_) => FirstTimeSetupScreen(
+                      userData: userData,
+                      userType: resolvedType,
+                    ),
+              ),
+            );
+            return;
           }
 
           if (resolvedType == 'hr') {

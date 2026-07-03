@@ -122,12 +122,18 @@ router.post("/reset-password", async (req, res) => {
     if (employee) {
       await prisma.employees.update({
         where: { email },
-        data: { password: hashedPassword },
+        data: { 
+          password: hashedPassword,
+          must_change_password: false
+        },
       });
     } else {
       await prisma.users.update({
         where: { email },
-        data: { password: hashedPassword },
+        data: { 
+          password: hashedPassword,
+          must_change_password: false
+        },
       });
     }
 
@@ -138,6 +144,80 @@ router.post("/reset-password", async (req, res) => {
   } catch (err) {
     console.error("Reset password error:", err);
     return res.status(500).json({ message: "Server error" });
+  }
+});
+
+// 4. First Time Setup - Password change and Phone confirmation (if employee)
+router.post("/first-time-setup", async (req, res) => {
+  const { email, newPassword, phone } = req.body;
+
+  if (!email || !newPassword) {
+    return res.status(400).json({ message: "Email and new password are required" });
+  }
+
+  try {
+    const employee = await prisma.employees.findUnique({ where: { email } });
+    const user = await prisma.users.findUnique({ where: { email } });
+
+    if (!employee && !user) {
+      return res.status(404).json({ message: "No account found with this email" });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    let updatedUser;
+    let userType;
+
+    if (employee) {
+      userType = "employee";
+      updatedUser = await prisma.employees.update({
+        where: { email },
+        data: {
+          password: hashedPassword,
+          phone: phone || employee.phone,
+          must_change_password: false
+        }
+      });
+    } else {
+      userType = "hr";
+      updatedUser = await prisma.users.update({
+        where: { email },
+        data: {
+          password: hashedPassword,
+          must_change_password: false
+        }
+      });
+    }
+
+    const userPayload = userType === "employee" ? {
+      id: updatedUser.id,
+      employeeCode: updatedUser.employee_code,
+      name: `${updatedUser.first_name} ${updatedUser.last_name}`,
+      firstName: updatedUser.first_name,
+      lastName: updatedUser.last_name,
+      email: updatedUser.email,
+      jobTitle: updatedUser.job_title,
+      department: updatedUser.department,
+      salary: updatedUser.salary,
+      phone: updatedUser.phone,
+      mustChangePassword: updatedUser.must_change_password,
+    } : {
+      id: updatedUser.id,
+      name: updatedUser.name,
+      email: updatedUser.email,
+      role: updatedUser.role || "hr",
+      mustChangePassword: updatedUser.must_change_password,
+    };
+
+    return res.status(200).json({
+      message: "First-time setup completed successfully",
+      userType,
+      user: userPayload
+    });
+
+  } catch (err) {
+    console.error("First-time setup error:", err);
+    return res.status(500).json({ message: "Server error during setup" });
   }
 });
 

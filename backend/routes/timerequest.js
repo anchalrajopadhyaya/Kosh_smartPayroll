@@ -69,6 +69,20 @@ router.put("/:id/status", async (req, res) => {
             data: { status },
         });
 
+        // Create notification for employee
+        try {
+            const formattedDate = updatedRequest.date.toISOString().split('T')[0];
+            await prisma.notifications.create({
+                data: {
+                    employee_id: updatedRequest.employee_id,
+                    title: `Time Request ${status}`,
+                    description: `Your time adjustment request for ${formattedDate} has been ${status.toLowerCase()}.`
+                }
+            });
+        } catch (notifErr) {
+            console.error("Failed to create time request notification:", notifErr);
+        }
+
         // If Approved, sync with the attendance table!
         if (status === "Approved") {
             const reqData = updatedRequest;

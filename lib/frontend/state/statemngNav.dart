@@ -11,8 +11,8 @@ import 'package:payroll/frontend/employee/payslips.dart';
 import 'package:payroll/frontend/employee/navemp.dart';
 import 'package:payroll/frontend/employee/profile.dart';
 import 'package:payroll/frontend/hr/hr_attendance.dart';
-import 'package:payroll/frontend/widgets/Accountant/monthly_report.dart';
-import 'package:payroll/frontend/widgets/Accountant/nav_accountant.dart';
+import 'package:payroll/frontend/Accountant/monthly_report.dart';
+import 'package:payroll/frontend/Accountant/nav_accountant.dart';
 
 class HomeScreen extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -67,11 +67,11 @@ class HrHomeScreen extends StatefulWidget {
 }
 
 class _HrHomeScreenState extends State<HrHomeScreen> {
-  // ── HR mode ──────────────────────────────────────
+  // ── HR mode
   int _hrIndex = 0;
   late final List<Widget> _hrScreens;
 
-  // ── Employee personal view ────────────────────────
+  // ── Employee personal view
   bool _isEmployeeView = false;
   bool _isFetching = false;
   Map<String, dynamic>? _employeeData; // cached after first fetch
@@ -83,7 +83,7 @@ class _HrHomeScreenState extends State<HrHomeScreen> {
     super.initState();
     _hrScreens = [
       HrDashboardScreen(
-        userName: widget.userData['name'] ?? 'User',
+        userData: widget.userData,
         onEmployeesTap: () => setState(() => _hrIndex = 1),
         onPersonalViewTap: _switchToEmployeeView,
       ),

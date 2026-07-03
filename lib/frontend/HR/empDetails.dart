@@ -257,8 +257,90 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
                 _detailRow('Gender', employee['gender']?.toUpperCase()),
                 _detailRow('Salary', 'NPR ${employee['salary']}'),
                 const SizedBox(height: 20),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    icon: const Icon(Icons.delete_forever),
+                    label: const Text('Delete Employee'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.redAccent,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    onPressed: () => _confirmDeleteEmployee(context, employee),
+                  ),
+                ),
               ],
             ),
+          ),
+    );
+  }
+
+  void _confirmDeleteEmployee(
+    BuildContext context,
+    Map<String, dynamic> employee,
+  ) {
+    showDialog(
+      context: context,
+      builder:
+          (ctx) => AlertDialog(
+            title: const Text(
+              'Delete Employee',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            content: Text(
+              'Are you sure you want to permanently delete ${employee['first_name']} ${employee['last_name']}? This action is irreversible.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text(
+                  'Cancel',
+                  style: TextStyle(color: Colors.grey),
+                ),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                onPressed: () async {
+                  Navigator.pop(ctx); // Close dialog
+                  Navigator.pop(context); // Close bottom sheet
+
+                  try {
+                    final response = await http.delete(
+                      Uri.parse(
+                        'http://10.0.2.2:3000/api/employees/${employee['id']}',
+                      ),
+                    );
+
+                    if (response.statusCode == 200) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Employee deleted successfully'),
+                          backgroundColor: Colors.green,
+                        ),
+                      );
+                      fetchEmployees(); // Refresh list
+                    } else {
+                      throw Exception('Failed to delete employee');
+                    }
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Error deleting employee: $e'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
+                },
+                child: const Text(
+                  'Delete',
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
+            ],
           ),
     );
   }

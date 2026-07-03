@@ -40,9 +40,9 @@ async function checkLatestAttendance() {
 
         console.log(`Distance from office: ${result.distance} km`);
         if (result.isInside) {
-            console.log('\x1b[32m%s\x1b[0m', 'Status: INSIDE allowed radius. ✅');
+            console.log('\x1b[32m%s\x1b[0m', 'Status: INSIDE allowed radius. ');
         } else {
-            console.log('\x1b[31m%s\x1b[0m', 'Status: OUTSIDE allowed radius. ❌');
+            console.log('\x1b[31m%s\x1b[0m', 'Status: OUTSIDE allowed radius. ');
             console.log(`Extra distance: ${result.extraDistance} km`);
         }
         

@@ -30,9 +30,12 @@ model employees {
   employment_type String?  @default("Full-Time") @db.VarChar(50)
   created_at     DateTime? @default(now()) @db.Timestamp(6)
   password       String?   @db.VarChar(255)
+  must_change_password Boolean @default(true)
   attendance     attendance[]
   leave_requests leave_requests[]
   time_requests  time_requests[]
+  notifications  notifications[]
+  profile_requests profile_update_requests[]
 }
 
 model attendance {
@@ -74,6 +77,7 @@ model users {
   email    String? @unique @db.VarChar(100)
   password String? @db.VarChar(100)
   role     String? @default("hr") @db.VarChar(50)
+  must_change_password Boolean @default(true)
 }
 
 model time_requests {
@@ -105,3 +109,27 @@ model password_resets {
   expires_at DateTime
   created_at DateTime @default(now())
 }
+
+model notifications {
+  id          Int      @id @default(autoincrement())
+  employee_id Int?
+  title       String   @db.VarChar(100)
+  description String   @db.VarChar(255)
+  is_read     Boolean  @default(false)
+  created_at  DateTime @default(now()) @db.Timestamp(6)
+
+  employee    employees? @relation(fields: [employee_id], references: [id], onDelete: Cascade)
+}
+
+model profile_update_requests {
+  id             Int       @id @default(autoincrement())
+  employee_id    Int
+  phone          String?   @db.VarChar(20)
+  pan            String?   @db.VarChar(20)
+  citizenship_no String?   @db.VarChar(20)
+  status         String?   @default("Pending") @db.VarChar(20)
+  created_at     DateTime? @default(now()) @db.Timestamp(6)
+
+  employee       employees @relation(fields: [employee_id], references: [id], onDelete: Cascade)
+}
+

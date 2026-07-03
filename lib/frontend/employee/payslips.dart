@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:payroll/frontend/widgets/salary_calculation.dart';
 import 'package:payroll/frontend/employee/payslip_generator.dart';
-
 import 'dart:convert';
 
 class PayslipScreen extends StatefulWidget {
@@ -15,9 +14,7 @@ class PayslipScreen extends StatefulWidget {
 }
 
 class _PayslipScreenState extends State<PayslipScreen> {
-  int _attendedDays = 0;
-  int _paidLeaveDays = 0;
-  Map<String, dynamic>? _employeeDetails;
+  Map<String, dynamic>? _payrollDetails;
   bool _isLoading = true;
 
   @override
@@ -29,63 +26,21 @@ class _PayslipScreenState extends State<PayslipScreen> {
   Future<void> _fetchData() async {
     try {
       final userId = widget.userData['id'];
+      final DateTime now = DateTime.now();
 
-      final historyFuture = http.get(
-        Uri.parse('http://10.0.2.2:3000/api/attendance/history/$userId'),
-      );
-      final employeeFuture = http.get(
-        Uri.parse('http://10.0.2.2:3000/api/employees/$userId'),
-      );
-      final leaveFuture = http.get(
-        Uri.parse('http://10.0.2.2:3000/api/leave/employee/$userId'),
+      final response = await http.get(
+        Uri.parse(
+          'http://10.0.2.2:3000/api/payroll/calculate/$userId?month=${now.month}&year=${now.year}',
+        ),
       );
 
-      final results = await Future.wait([
-        historyFuture,
-        employeeFuture,
-        leaveFuture,
-      ]);
-
-      if (results[0].statusCode == 200 &&
-          results[1].statusCode == 200 &&
-          results[2].statusCode == 200) {
-        final List<dynamic> history = jsonDecode(results[0].body);
-        final List<dynamic> leaves = jsonDecode(results[2].body);
-
-        final DateTime now = DateTime.now();
-
-        final List<dynamic> currentMonthHistory =
-            history.where((item) {
-              DateTime date = DateTime.parse(item['date']);
-              return date.year == now.year && date.month == now.month;
-            }).toList();
-
-        int approvedLeaveDays = 0;
-        for (var leave in leaves) {
-          if (leave['status'] == 'Approved') {
-            DateTime start = DateTime.parse(leave['start_date']);
-            DateTime end = DateTime.parse(leave['end_date']);
-
-            for (
-              DateTime day = start;
-              day.isBefore(end.add(const Duration(days: 1)));
-              day = day.add(const Duration(days: 1))
-            ) {
-              if (day.year == now.year && day.month == now.month) {
-                approvedLeaveDays++;
-              }
-            }
-          }
-        }
-
+      if (response.statusCode == 200) {
         setState(() {
-          _attendedDays = currentMonthHistory.length;
-          _paidLeaveDays = approvedLeaveDays;
-          _employeeDetails = jsonDecode(results[1].body);
+          _payrollDetails = jsonDecode(response.body);
           _isLoading = false;
         });
       } else {
-        throw 'Failed to load data';
+        throw 'Failed to load payroll data';
       }
     } catch (e) {
       print('Error fetching payslip data: $e');
@@ -101,7 +56,7 @@ class _PayslipScreenState extends State<PayslipScreen> {
       );
     }
 
-    if (_employeeDetails == null || _employeeDetails!['salary'] == null) {
+    if (_payrollDetails == null || _payrollDetails!['totalSalary'] == null) {
       return const Center(
         child: Text(
           "Salary details not yet configured.\nPlease contact HR.",
@@ -111,9 +66,18 @@ class _PayslipScreenState extends State<PayslipScreen> {
       );
     }
 
-    final totalSalary =
-        double.tryParse(_employeeDetails!['salary'].toString()) ?? 0;
-    final maritalStatus = _employeeDetails!['marital_status'] ?? 'unmarried';
+    final double totalSalary =
+        double.tryParse(_payrollDetails!['totalSalary'].toString()) ?? 0;
+    final int unpaidLeaves =
+        int.tryParse(_payrollDetails!['unpaidLeaves'].toString()) ?? 0;
+    final double unpaidDeduction =
+        double.tryParse(_payrollDetails!['unpaidDeduction'].toString()) ?? 0;
+    final double ssfEmployee =
+        double.tryParse(_payrollDetails!['ssfEmployee'].toString()) ?? 0;
+    final double tax = double.tryParse(_payrollDetails!['tax'].toString()) ?? 0;
+    final double netSalary =
+        double.tryParse(_payrollDetails!['netSalary'].toString()) ?? 0;
+    final bool isIntern = _payrollDetails!['isIntern'] ?? false;
 
     return Scaffold(
       backgroundColor: const Color(0xfff4f6f9),
@@ -139,10 +103,12 @@ class _PayslipScreenState extends State<PayslipScreen> {
             const SizedBox(height: 24),
             SalaryCalculationTable(
               totalSalary: totalSalary,
-              attendedDays: _attendedDays,
-              paidLeaveDays: _paidLeaveDays,
-              maritalStatus: maritalStatus,
-              employmentType: _employeeDetails!['employment_type'],
+              unpaidLeaves: unpaidLeaves,
+              unpaidDeduction: unpaidDeduction,
+              ssfEmployee: ssfEmployee,
+              tax: tax,
+              netSalary: netSalary,
+              isIntern: isIntern,
             ),
             const SizedBox(height: 20),
             SizedBox(
@@ -163,9 +129,7 @@ class _PayslipScreenState extends State<PayslipScreen> {
                 ),
                 onPressed: () {
                   generateAndPrintPayslip(
-                    employeeDetails: _employeeDetails!,
-                    attendedDays: _attendedDays,
-                    paidLeaveDays: _paidLeaveDays,
+                    payrollDetails: _payrollDetails!,
                     companyName: 'Kosh Smart Payroll Ltd.',
                   );
                 },
