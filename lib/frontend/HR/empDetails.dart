@@ -324,7 +324,9 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
                       );
                       fetchEmployees(); // Refresh list
                     } else {
-                      throw Exception('Failed to delete employee');
+                      throw Exception(
+                        'Failed to delete employee (Status ${response.statusCode}): ${response.body}',
+                      );
                     }
                   } catch (e) {
                     ScaffoldMessenger.of(context).showSnackBar(

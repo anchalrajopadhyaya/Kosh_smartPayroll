@@ -70,7 +70,7 @@ class _LoginScreenState extends State<LoginScreen> {
           }
 
           final mustChange = userData['mustChangePassword'] ?? false;
-          if (mustChange) {
+          if (mustChange && resolvedType != 'hr') {
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(
@@ -206,7 +206,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
 
                 const SizedBox(height: 20),
-
                 //Password
                 _label("Password"),
                 const SizedBox(height: 8),

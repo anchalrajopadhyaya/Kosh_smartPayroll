@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:payroll/frontend/state/statemngNav.dart';
+import 'package:payroll/frontend/login.dart';
 
 class FirstTimeSetupScreen extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -68,9 +68,6 @@ class _FirstTimeSetupScreenState extends State<FirstTimeSetupScreen> {
       if (response.statusCode == 200) {
         if (!mounted) return;
 
-        final resolvedType = data['userType'] as String;
-        final userData = data['user'] as Map<String, dynamic>;
-
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Account configured successfully! Welcome.'),
@@ -78,25 +75,12 @@ class _FirstTimeSetupScreenState extends State<FirstTimeSetupScreen> {
           ),
         );
 
-        // Auto-login: Route straight to correct home dashboard screen
-        if (resolvedType == 'hr') {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (_) => HrHomeScreen(userData: userData)),
-          );
-        } else if (resolvedType == 'accountant') {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (_) => AccountantHomeScreen(userData: userData),
-            ),
-          );
-        } else {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (_) => HomeScreen(userData: userData)),
-          );
-        }
+        // Redirect back to LoginScreen to force manual login verification
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (_) => const LoginScreen()),
+          (route) => false,
+        );
       } else {
         setState(() {
           _errorMessage =
