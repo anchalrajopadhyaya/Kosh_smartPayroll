@@ -1,3 +1,4 @@
+import 'package:payroll/frontend/utils/config.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -32,8 +33,8 @@ class _NotificationState extends State<notification> {
       final employeeId = widget.userData['id'];
       final url =
           isHr
-              ? 'http://10.0.2.2:3000/api/notifications/hr'
-              : 'http://10.0.2.2:3000/api/notifications/$employeeId';
+              ? '${AppConfig.baseUrl}/api/notifications/hr'
+              : '${AppConfig.baseUrl}/api/notifications/$employeeId';
 
       final response = await http.get(Uri.parse(url));
 
@@ -62,7 +63,7 @@ class _NotificationState extends State<notification> {
     try {
       final response = await http.put(
         Uri.parse(
-          'http://10.0.2.2:3000/api/notifications/$notificationId/read',
+          '${AppConfig.baseUrl}/api/notifications/$notificationId/read',
         ),
       );
 

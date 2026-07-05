@@ -55,7 +55,8 @@ class HrSettingsScreen extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const SalaryFormulasScreen(),
+                      builder:
+                          (context) => SalaryFormulasScreen(userData: userData),
                     ),
                   );
                 },

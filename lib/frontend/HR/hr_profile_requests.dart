@@ -1,3 +1,4 @@
+import 'package:payroll/frontend/utils/config.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -29,7 +30,7 @@ class _HrProfileRequestsScreenState extends State<HrProfileRequestsScreen> {
 
     try {
       final response = await http.get(
-        Uri.parse('http://10.0.2.2:3000/api/profile-update/pending'),
+        AppConfig.apiUri('/api/profile-update/pending'),
       );
 
       if (response.statusCode == 200) {
@@ -55,7 +56,7 @@ class _HrProfileRequestsScreenState extends State<HrProfileRequestsScreen> {
   Future<void> _updateRequestStatus(int requestId, String status) async {
     try {
       final response = await http.put(
-        Uri.parse('http://10.0.2.2:3000/api/profile-update/$requestId/status'),
+        AppConfig.apiUri('/api/profile-update/$requestId/status'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'status': status}),
       );

@@ -1,3 +1,4 @@
+import 'package:payroll/frontend/utils/config.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -28,7 +29,7 @@ class _HrAttendanceScreenState extends State<HrAttendanceScreen> {
       final formattedDate = DateFormat('yyyy-MM-dd').format(_selectedDate);
       final response = await http.get(
         Uri.parse(
-          'http://10.0.2.2:3000/api/attendance/daily?date=$formattedDate',
+          '${AppConfig.baseUrl}/api/attendance/daily?date=$formattedDate',
         ),
       );
 

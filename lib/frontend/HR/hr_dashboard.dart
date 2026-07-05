@@ -1,3 +1,4 @@
+import 'package:payroll/frontend/utils/config.dart';
 import 'package:flutter/material.dart';
 import 'package:payroll/frontend/HR/hr_feedback.dart';
 import 'package:payroll/frontend/HR/hr_leave_requests.dart';
@@ -37,7 +38,7 @@ class _HrDashboardScreenState extends State<HrDashboardScreen> {
   Future<void> _fetchEmployeeCount() async {
     try {
       final response = await http.get(
-        Uri.parse('http://10.0.2.2:3000/api/employees'),
+        AppConfig.apiUri('/api/employees'),
       );
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);

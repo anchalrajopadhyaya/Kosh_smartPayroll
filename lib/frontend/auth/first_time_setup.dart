@@ -1,3 +1,4 @@
+import 'package:payroll/frontend/utils/config.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -54,7 +55,7 @@ class _FirstTimeSetupScreenState extends State<FirstTimeSetupScreen> {
     try {
       final isEmployee = widget.userType != 'hr';
       final response = await http.post(
-        Uri.parse('http://10.0.2.2:3000/api/auth/first-time-setup'),
+        AppConfig.apiUri('/api/auth/first-time-setup'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'email': widget.userData['email'],

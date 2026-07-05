@@ -1,3 +1,4 @@
+import 'package:payroll/frontend/utils/config.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -57,7 +58,7 @@ class _ApplyLeaveScreenState extends State<ApplyLeaveScreen> {
       setState(() => _isLoading = true);
       try {
         final response = await http.post(
-          Uri.parse('http://10.0.2.2:3000/api/leave'),
+          AppConfig.apiUri('/api/leave'),
           headers: {'Content-Type': 'application/json'},
           body: jsonEncode({
             'employeeId': widget.userData['id'],

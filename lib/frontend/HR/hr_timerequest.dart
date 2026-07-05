@@ -1,3 +1,4 @@
+import 'package:payroll/frontend/utils/config.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -27,7 +28,7 @@ class _HrTimeRequestsScreenState extends State<HrTimeRequestsScreen> {
     setState(() => _isLoading = true);
     try {
       final response = await http.get(
-        Uri.parse('http://10.0.2.2:3000/api/time-request/all'),
+        AppConfig.apiUri('/api/time-request/all'),
       );
       if (response.statusCode == 200) {
         setState(() {
@@ -44,7 +45,7 @@ class _HrTimeRequestsScreenState extends State<HrTimeRequestsScreen> {
   Future<void> _updateTimeRequestStatus(int id, String newStatus) async {
     try {
       final response = await http.put(
-        Uri.parse('http://10.0.2.2:3000/api/time-request/$id/status'),
+        AppConfig.apiUri('/api/time-request/$id/status'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'status': newStatus}),
       );

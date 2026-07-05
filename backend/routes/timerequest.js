@@ -17,6 +17,25 @@ router.post("/", async (req, res) => {
                 status: "Pending",
             },
         });
+
+        // Create notification for HR
+        try {
+            const emp = await prisma.employees.findUnique({
+                where: { id: parseInt(employeeId) }
+            });
+            const empName = emp ? `${emp.first_name || ""} ${emp.last_name || ""}`.trim() : `Employee #${employeeId}`;
+            const formattedDate = timeReq.date.toISOString().split('T')[0];
+            await prisma.notifications.create({
+                data: {
+                    employee_id: null,
+                    title: `New Time Request`,
+                    description: `${empName} submitted a time adjustment request for ${formattedDate}.`
+                }
+            });
+        } catch (notifErr) {
+            console.error("Failed to create time request notification for HR:", notifErr);
+        }
+
         res.status(201).json({ message: "Time request submitted successfully", timeReq });
     } catch (err) {
         console.error(err);
@@ -118,6 +137,13 @@ router.put("/:id/status", async (req, res) => {
                         location_name: "HR Adjusted"
                     }
                 });
+            }
+
+            // Refresh the Materialized View silently
+            try {
+                await prisma.$executeRawUnsafe('REFRESH MATERIALIZED VIEW employee_daily_punches;');
+            } catch (mvErr) {
+                console.error('Failed to refresh MV:', mvErr);
             }
         }
 

@@ -1,3 +1,4 @@
+import 'package:payroll/frontend/utils/config.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -33,7 +34,7 @@ class _EmployeeFeedbackScreenState extends State<EmployeeFeedbackScreen> {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
       try {
-        final url = Uri.parse('http://10.0.2.2:3000/api/feedback');
+        final url = AppConfig.apiUri('/api/feedback');
         final response = await http.post(
           url,
           headers: {'Content-Type': 'application/json'},

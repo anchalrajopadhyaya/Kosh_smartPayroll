@@ -1,3 +1,4 @@
+import 'package:payroll/frontend/utils/config.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -67,11 +68,11 @@ class HrHomeScreen extends StatefulWidget {
 }
 
 class _HrHomeScreenState extends State<HrHomeScreen> {
-  // ── HR mode
+  //HR mode
   int _hrIndex = 0;
   late final List<Widget> _hrScreens;
 
-  // ── Employee personal view
+  //Employee personal view
   bool _isEmployeeView = false;
   bool _isFetching = false;
   Map<String, dynamic>? _employeeData; // cached after first fetch
@@ -93,7 +94,7 @@ class _HrHomeScreenState extends State<HrHomeScreen> {
     ];
   }
 
-  // ── Fetch employee record once, then switch view ──
+  // Fetch employee record once, then switch view ──
   Future<void> _switchToEmployeeView() async {
     // Already fetched → just flip the view
     if (_employeeData != null) {
@@ -112,7 +113,7 @@ class _HrHomeScreenState extends State<HrHomeScreen> {
     try {
       final res = await http.get(
         Uri.parse(
-          'http://10.0.2.2:3000/api/employees/by-email/${Uri.encodeComponent(email)}',
+          '${AppConfig.baseUrl}/api/employees/by-email/${Uri.encodeComponent(email)}',
         ),
       );
       if (!mounted) return;

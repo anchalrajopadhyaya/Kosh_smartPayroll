@@ -1,3 +1,4 @@
+import 'package:payroll/frontend/utils/config.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -120,7 +121,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       if (personalChanged) {
         final res = await http.put(
           Uri.parse(
-            'http://10.0.2.2:3000/api/profile-update/personal-info/$employeeId',
+            '${AppConfig.baseUrl}/api/profile-update/personal-info/$employeeId',
           ),
           headers: {'Content-Type': 'application/json'},
           body: jsonEncode({
@@ -138,7 +139,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       // 2. Submit request for legal info if changed
       if (legalChanged) {
         final res = await http.post(
-          Uri.parse('http://10.0.2.2:3000/api/profile-update'),
+          AppConfig.apiUri('/api/profile-update'),
           headers: {'Content-Type': 'application/json'},
           body: jsonEncode({
             'employeeId': employeeId,

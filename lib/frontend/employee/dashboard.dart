@@ -1,3 +1,4 @@
+import 'package:payroll/frontend/utils/config.dart';
 import 'package:flutter/material.dart';
 import 'package:payroll/frontend/employee/applyLeave.dart';
 import 'package:payroll/frontend/notification.dart';
@@ -29,7 +30,7 @@ class EmployeeDashboardState extends State<EmployeeDashboard> {
     try {
       final response = await http.get(
         Uri.parse(
-          'http://10.0.2.2:3000/api/attendance/status/${widget.userData['id']}',
+          '${AppConfig.baseUrl}/api/attendance/status/${widget.userData['id']}',
         ),
       );
       if (response.statusCode == 200) {
@@ -74,7 +75,7 @@ class EmployeeDashboardState extends State<EmployeeDashboard> {
       final String time = DateFormat('HH:mm').format(now);
       // 4. Send to Backend
       final response = await http.post(
-        Uri.parse('http://10.0.2.2:3000/api/attendance/punch-in'),
+        AppConfig.apiUri('/api/attendance/punch-in'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'employeeId': widget.userData['id'],
@@ -120,7 +121,7 @@ class EmployeeDashboardState extends State<EmployeeDashboard> {
       final String time = DateFormat('HH:mm').format(now);
       // 3. Send to Backend
       final response = await http.post(
-        Uri.parse('http://10.0.2.2:3000/api/attendance/punch-out'),
+        AppConfig.apiUri('/api/attendance/punch-out'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'employeeId': widget.userData['id'],

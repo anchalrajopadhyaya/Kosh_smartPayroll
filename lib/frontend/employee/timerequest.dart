@@ -1,3 +1,4 @@
+import 'package:payroll/frontend/utils/config.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -107,7 +108,7 @@ class _TimeRequestPageState extends State<TimeRequestPage> {
 
       try {
         final url = Uri.parse(
-          'http://10.0.2.2:3000/api/time-request',
+          '${AppConfig.baseUrl}/api/time-request',
         ); // update IP for mobile
 
         final dateStr =

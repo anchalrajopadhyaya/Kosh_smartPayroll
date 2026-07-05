@@ -1,3 +1,4 @@
+import 'package:payroll/frontend/utils/config.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -27,7 +28,7 @@ class _HrFeedbackScreenState extends State<HrFeedbackScreen> {
     setState(() => _isLoading = true);
     try {
       final response = await http.get(
-        Uri.parse('http://10.0.2.2:3000/api/feedback/all'),
+        AppConfig.apiUri('/api/feedback/all'),
       );
       if (response.statusCode == 200) {
         setState(() {
@@ -44,7 +45,7 @@ class _HrFeedbackScreenState extends State<HrFeedbackScreen> {
   Future<void> _updateFeedbackStatus(int id, String newStatus) async {
     try {
       final response = await http.put(
-        Uri.parse('http://10.0.2.2:3000/api/feedback/$id/status'),
+        AppConfig.apiUri('/api/feedback/$id/status'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'status': newStatus}),
       );

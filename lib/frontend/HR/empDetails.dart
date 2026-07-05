@@ -1,3 +1,4 @@
+import 'package:payroll/frontend/utils/config.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -31,7 +32,7 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
 
     try {
       final response = await http.get(
-        Uri.parse('http://10.0.2.2:3000/api/employees'),
+        AppConfig.apiUri('/api/employees'),
         headers: {'Content-Type': 'application/json'},
       );
 
@@ -311,7 +312,7 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
                   try {
                     final response = await http.delete(
                       Uri.parse(
-                        'http://10.0.2.2:3000/api/employees/${employee['id']}',
+                        '${AppConfig.baseUrl}/api/employees/${employee['id']}',
                       ),
                     );
 

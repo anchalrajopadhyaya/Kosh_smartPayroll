@@ -1,3 +1,4 @@
+import 'package:payroll/frontend/utils/config.dart';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -424,7 +425,7 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
   Future<void> _createEmployee() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final url = Uri.parse("http://10.0.2.2:3000/api/employees");
+    final url = AppConfig.apiUri('/api/employees');
 
     final body = {
       "firstName": firstName.text.trim(),

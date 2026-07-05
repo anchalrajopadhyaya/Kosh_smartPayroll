@@ -1,3 +1,4 @@
+import 'package:payroll/frontend/utils/config.dart';
 import 'package:flutter/material.dart';
 import 'package:payroll/frontend/employee/payslips.dart';
 import 'package:payroll/frontend/attendance.dart';
@@ -82,7 +83,7 @@ class _AccountantHomeContentState extends State<_AccountantHomeContent> {
   Future<void> _fetchEmployeeCount() async {
     try {
       final response = await http.get(
-        Uri.parse('http://10.0.2.2:3000/api/employees'),
+        AppConfig.apiUri('/api/employees'),
       );
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -105,7 +106,7 @@ class _AccountantHomeContentState extends State<_AccountantHomeContent> {
     try {
       final response = await http.get(
         Uri.parse(
-          'http://10.0.2.2:3000/api/attendance/status/${widget.userData['id']}',
+          '${AppConfig.baseUrl}/api/attendance/status/${widget.userData['id']}',
         ),
       );
       if (response.statusCode == 200) {
@@ -147,7 +148,7 @@ class _AccountantHomeContentState extends State<_AccountantHomeContent> {
       final String time = DateFormat('HH:mm').format(now);
 
       final response = await http.post(
-        Uri.parse('http://10.0.2.2:3000/api/attendance/punch-in'),
+        AppConfig.apiUri('/api/attendance/punch-in'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'employeeId': widget.userData['id'],
@@ -189,7 +190,7 @@ class _AccountantHomeContentState extends State<_AccountantHomeContent> {
       final String time = DateFormat('HH:mm').format(now);
 
       final response = await http.post(
-        Uri.parse('http://10.0.2.2:3000/api/attendance/punch-out'),
+        AppConfig.apiUri('/api/attendance/punch-out'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'employeeId': widget.userData['id'],

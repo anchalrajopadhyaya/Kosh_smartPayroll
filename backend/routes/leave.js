@@ -16,6 +16,26 @@ router.post("/", async (req, res) => {
         status: "Pending",
       },
     });
+
+    // Create notification for HR
+    try {
+      const emp = await prisma.employees.findUnique({
+        where: { id: parseInt(employeeId) }
+      });
+      const empName = emp ? `${emp.first_name || ""} ${emp.last_name || ""}`.trim() : `Employee #${employeeId}`;
+      const formattedStart = leave.start_date.toISOString().split('T')[0];
+      const formattedEnd = leave.end_date.toISOString().split('T')[0];
+      await prisma.notifications.create({
+        data: {
+          employee_id: null,
+          title: `New Leave Request`,
+          description: `${empName} requested ${leaveType} leave from ${formattedStart} to ${formattedEnd}.`
+        }
+      });
+    } catch (notifErr) {
+      console.error("Failed to create leave notification for HR:", notifErr);
+    }
+
     res.status(201).json({ message: "Leave requested successfully", leave });
   } catch (err) {
     console.error(err);
@@ -64,6 +84,22 @@ router.put("/:id/status", async (req, res) => {
       where: { id: parseInt(id) },
       data: { status },
     });
+
+    // Create notification for employee
+    try {
+      const formattedStart = leave.start_date.toISOString().split('T')[0];
+      const formattedEnd = leave.end_date.toISOString().split('T')[0];
+      await prisma.notifications.create({
+        data: {
+          employee_id: leave.employee_id,
+          title: `Leave Request ${status}`,
+          description: `Your ${leave.leave_type} request from ${formattedStart} to ${formattedEnd} has been ${status.toLowerCase()}.`
+        }
+      });
+    } catch (notifErr) {
+      console.error("Failed to create leave notification:", notifErr);
+    }
+
     res.status(200).json({ message: "Status updated", leave });
   } catch (err) {
     console.error(err);

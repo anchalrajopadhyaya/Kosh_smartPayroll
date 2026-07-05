@@ -40,7 +40,7 @@ router.put("/:id/read", async (req, res) => {
     }
 });
 
-// POST create system notification
+//POST create system notification
 router.post("/", async (req, res) => {
     const { employeeId, title, description } = req.body;
     if (!employeeId || !title || !description) {
