@@ -1,3 +1,4 @@
+process.env.NODE_ENV = 'test';
 const request = require('supertest');
 const app = require('../app');
 const prisma = require('../prismaClient');
@@ -7,6 +8,9 @@ describe('POST /login', () => {
 
     beforeEach(async () => {
         await prisma.users.deleteMany();
+        await prisma.attendance.deleteMany();
+        await prisma.leave_requests.deleteMany();
+        await prisma.time_requests.deleteMany();
         await prisma.employees.deleteMany();
     });
 

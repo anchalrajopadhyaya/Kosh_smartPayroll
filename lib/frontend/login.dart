@@ -1,10 +1,11 @@
-import 'package:payroll/frontend/utils/config.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:payroll/frontend/state/statemngNav.dart';
 import 'package:payroll/frontend/auth/forgot_password.dart' as auth;
 import 'package:payroll/frontend/auth/first_time_setup.dart';
+
+import 'package:payroll/frontend/utils/config.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -26,11 +27,7 @@ class _LoginScreenState extends State<LoginScreen> {
       _error = null;
     });
 
-    // final url = Uri.parse('http://10.0.2.2:3000/login');
-
     final url = AppConfig.apiUri('/login');
-    // final url = Uri.parse('http://192.168.50.116:3000/login');
-    // final url = Uri.parse('http://10.24.4.122:3000/login');
 
     try {
       final response = await http.post(
@@ -161,18 +158,26 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 50),
                 //Logo
                 Container(
-                  width: 90,
-                  height: 90,
+                  width: 160,
+                  height: 80,
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(22),
+                    borderRadius: BorderRadius.circular(18),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.15),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
                   ),
-                  child: const Center(
-                    child: Text(
-                      "Logo",
-                      style: TextStyle(
-                        color: Colors.grey,
-                        fontWeight: FontWeight.w600,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(18),
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Image.asset(
+                        'assets/KOSH.png',
+                        fit: BoxFit.contain,
                       ),
                     ),
                   ),

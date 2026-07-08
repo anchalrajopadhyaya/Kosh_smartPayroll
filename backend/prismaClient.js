@@ -3,7 +3,10 @@ const { PrismaPg } = require('@prisma/adapter-pg');
 const { Pool } = require('pg');
 const url = require('url');  // Node's URL parser
 
-const dbUrl = process.env.DATABASE_URL;
+let dbUrl = process.env.DATABASE_URL;
+if (process.env.NODE_ENV === 'test') {
+  dbUrl = process.env.TEST_DATABASE_URL || 'postgresql://postgres:4251606@localhost:5432/kosh_test_db?schema=public';
+}
 if (!dbUrl) throw new Error('DATABASE_URL not set');
 
 const params = url.parse(dbUrl, true);
