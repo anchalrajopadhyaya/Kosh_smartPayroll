@@ -14,8 +14,8 @@ async function calculateMonthlyPayroll(employee, month, year) {
   const isIntern = employee.employment_type?.toLowerCase() === 'intern';
 
   // 1. Get Attendance for the month
-  const startDate = new Date(year, month - 1, 1);
-  const endDate = new Date(year, month, 0); // Last day of month
+  const startDate = new Date(Date.UTC(year, month - 1, 1));
+  const endDate = new Date(Date.UTC(year, month, 0)); // Last day of month
 
   const attendanceCount = await prisma.attendance.count({
     where: {

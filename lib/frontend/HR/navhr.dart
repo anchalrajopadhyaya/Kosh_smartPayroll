@@ -42,7 +42,7 @@ class HrNav extends StatelessWidget {
         BottomNavigationBarItem(
           icon: Icon(Icons.payments_outlined),
           activeIcon: Icon(Icons.payments),
-          label: 'Payroll',
+          label: 'Attendance',
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.manage_accounts_outlined),

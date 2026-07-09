@@ -124,4 +124,45 @@ router.post("/formula-request", async (req, res) => {
   }
 });
 
+// POST /api/payroll/pay
+router.post("/pay", async (req, res) => {
+  const { employeeId, amount, month, year } = req.body;
+  if (!employeeId || !amount || !month || !year) {
+    return res.status(400).json({ error: "Missing required parameters" });
+  }
+
+  try {
+    const employee = await prisma.employees.findUnique({
+      where: { id: parseInt(employeeId) }
+    });
+
+    if (!employee) {
+      return res.status(404).json({ error: "Employee not found" });
+    }
+
+    const monthNames = [
+      "January", "February", "March", "April", "May", "June",
+      "July", "August", "September", "October", "November", "December"
+    ];
+    const monthName = monthNames[month - 1] || `Month ${month}`;
+
+    //create a notification for the employee
+    await prisma.notifications.create({
+      data: {
+        employee_id: parseInt(employeeId),
+        title: "Salary Paid",
+        description: `Your salary of NPR ${parseFloat(amount).toFixed(2)} for ${monthName} ${year} has been paid successfully.`
+      }
+    });
+
+    res.status(200).json({
+      success: true,
+      message: `Salary of NPR ${parseFloat(amount).toFixed(2)} paid to ${employee.first_name} ${employee.last_name}`
+    });
+  } catch (err) {
+    console.error("Error processing payment:", err);
+    res.status(500).json({ error: "Server error processing payment" });
+  }
+});
+
 module.exports = router;

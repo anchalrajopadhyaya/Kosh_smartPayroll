@@ -152,8 +152,11 @@ router.post('/punch-out', async (req, res) => {
 //Get today's attendance 
 router.get('/status/:employeeId', async (req, res) => {
     const { employeeId } = req.params;
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const today = new Date(`${year}-${month}-${day}`);
 
     try {
         const attendance = await prisma.attendance.findFirst({
@@ -221,7 +224,6 @@ router.get('/daily', async (req, res) => {
 
     try {
         const queryDate = new Date(date);
-        queryDate.setHours(0, 0, 0, 0);
 
         // 1. Get all employees
         const employees = await prisma.employees.findMany({

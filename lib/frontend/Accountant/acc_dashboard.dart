@@ -82,9 +82,7 @@ class _AccountantHomeContentState extends State<_AccountantHomeContent> {
 
   Future<void> _fetchEmployeeCount() async {
     try {
-      final response = await http.get(
-        AppConfig.apiUri('/api/employees'),
-      );
+      final response = await http.get(AppConfig.apiUri('/api/employees'));
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         final List<dynamic> employees = data['employees'] ?? [];

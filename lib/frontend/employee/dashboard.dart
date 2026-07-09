@@ -8,6 +8,7 @@ import 'dart:convert';
 import 'package:intl/intl.dart';
 import 'package:payroll/frontend/employee/emp_feedback.dart';
 import 'package:payroll/frontend/widgets/daily_punchesDialog.dart';
+import 'package:payroll/frontend/Accountant/employee_payment.dart';
 
 class EmployeeDashboard extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -327,6 +328,39 @@ class EmployeeDashboardState extends State<EmployeeDashboard> {
                 ),
               ),
             ),
+            if (widget.userData['department']?.toString().toLowerCase() ==
+                'accountant') ...[
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const EmployeePaymentScreen(),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.payment_outlined),
+                  label: const Text(
+                    'MANAGE PAYMENTS',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: const Color(0xFF188984),
+                    side: const BorderSide(
+                      color: Color(0xFF188984),
+                      width: 1.5,
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ],
         ),
       ),
