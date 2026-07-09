@@ -146,7 +146,7 @@ router.post("/pay", async (req, res) => {
     ];
     const monthName = monthNames[month - 1] || `Month ${month}`;
 
-    //create a notification for the employee
+    // Create a notification for the employee
     await prisma.notifications.create({
       data: {
         employee_id: parseInt(employeeId),
@@ -162,6 +162,166 @@ router.post("/pay", async (req, res) => {
   } catch (err) {
     console.error("Error processing payment:", err);
     res.status(500).json({ error: "Server error processing payment" });
+  }
+});
+
+// GET /api/payroll/payment-callback
+router.get("/payment-callback", (req, res) => {
+  res.send(`
+    <html>
+      <head>
+        <title>Payment Successful</title>
+        <style>
+          body { font-family: sans-serif; text-align: center; padding-top: 50px; background-color: #EBF1F6; }
+          h1 { color: #188984; }
+        </style>
+      </head>
+      <body>
+        <h1>Payment Successful!</h1>
+        <p>Returning to app...</p>
+      </body>
+    </html>
+  `);
+});
+
+// POST /api/payroll/initiate-payment
+router.post("/initiate-payment", async (req, res) => {
+  const { employeeId, amount } = req.body;
+  if (!employeeId || !amount) {
+    return res.status(400).json({ error: "Missing employeeId or amount" });
+  }
+
+  try {
+    const employee = await prisma.employees.findUnique({
+      where: { id: parseInt(employeeId) }
+    });
+
+    if (!employee) {
+      return res.status(404).json({ error: "Employee not found" });
+    }
+
+    const secretKey = process.env.KHALTI_SECRET_KEY || "2e1d0af60a6b4ff7ae5fc577caae71ec";
+    const publicKey = process.env.KHALTI_PUBLIC_KEY || "test_public_key_2e1d0af60a6b4ff7ae5fc577caae71ec";
+
+    // Khalti expects amount in paisa (1 NPR = 100 paisa)
+    // Minimum amount: Rs 10 (1000 paisa)
+    const amountPaisa = Math.round(parseFloat(amount) * 100);
+    
+    // Resolve callback URL dynamically using request host
+    const host = req.headers.host || "localhost:3000";
+    const returnUrl = `http://${host}/api/payroll/payment-callback`;
+
+    const khaltiPayload = {
+      return_url: returnUrl,
+      website_url: "http://localhost:3000",
+      amount: amountPaisa,
+      purchase_order_id: `PAY-${Date.now()}-${employeeId}`,
+      purchase_order_name: `Salary Payment for ${employee.first_name} ${employee.last_name}`,
+      customer_info: {
+        name: `${employee.first_name || ''} ${employee.last_name || ''}`.trim() || "Employee",
+        email: employee.email || "employee@koshpayroll.com",
+        phone: employee.phone || "9800000000"
+      }
+    };
+
+    console.log("Initiating Khalti payment payload:", khaltiPayload);
+
+    const axios = require('axios');
+    const response = await axios.post(
+      "https://a.khalti.com/api/v2/epayment/initiate/",
+      khaltiPayload,
+      {
+        headers: {
+          'Authorization': `Key ${secretKey}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+
+    console.log("Khalti initiate response data:", response.data);
+
+    res.status(200).json({
+      pidx: response.data.pidx,
+      payment_url: response.data.payment_url,
+      publicKey: publicKey
+    });
+
+  } catch (err) {
+    console.error("Error initiating Khalti payment:", err.response ? err.response.data : err.message);
+    res.status(500).json({ 
+      error: "Server error initiating payment", 
+      details: err.response ? err.response.data : err.message 
+    });
+  }
+});
+
+// POST /api/payroll/verify-payment
+router.post("/verify-payment", async (req, res) => {
+  const { pidx, employeeId, amount, month, year } = req.body;
+  if (!pidx || !employeeId || !amount || !month || !year) {
+    return res.status(400).json({ error: "Missing required parameters" });
+  }
+
+  try {
+    const secretKey = process.env.KHALTI_SECRET_KEY || "2e1d0af60a6b4ff7ae5fc577caae71ec";
+    const axios = require('axios');
+    
+    // Call Khalti lookup/verify API
+    const response = await axios.post(
+      "https://a.khalti.com/api/v2/epayment/lookup/",
+      { pidx },
+      {
+        headers: {
+          'Authorization': `Key ${secretKey}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+
+    console.log("Khalti verify response data:", response.data);
+
+    if (response.data.status === "Completed") {
+      // Payment is successfully verified! Complete the payout:
+      const employee = await prisma.employees.findUnique({
+        where: { id: parseInt(employeeId) }
+      });
+
+      if (!employee) {
+        return res.status(404).json({ error: "Employee not found" });
+      }
+
+      const monthNames = [
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+      ];
+      const monthName = monthNames[month - 1] || `Month ${month}`;
+
+      // Create a notification for the employee
+      await prisma.notifications.create({
+        data: {
+          employee_id: parseInt(employeeId),
+          title: "Salary Paid via Khalti",
+          description: `Your salary of NPR ${parseFloat(amount).toFixed(2)} for ${monthName} ${year} has been paid successfully via Khalti.`
+        }
+      });
+
+      res.status(200).json({
+        success: true,
+        message: `Salary of NPR ${parseFloat(amount).toFixed(2)} paid to ${employee.first_name} ${employee.last_name} and verified with Khalti.`
+      });
+    } else {
+      res.status(400).json({
+        success: false,
+        message: `Payment status is ${response.data.status}`
+      });
+    }
+
+  } catch (err) {
+    console.error("Error verifying payment:", err.response ? err.response.data : err.message);
+    res.status(500).json({ 
+      error: "Server error verifying payment", 
+      details: err.response ? err.response.data : err.message 
+    });
   }
 });
 

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:payroll/frontend/utils/config.dart';
 import 'package:payroll/frontend/widgets/salary_calculation.dart';
+import 'package:khalti_checkout_flutter/khalti_checkout_flutter.dart';
 
 class EmployeePaymentScreen extends StatefulWidget {
   const EmployeePaymentScreen({super.key});
@@ -303,29 +304,124 @@ class _EmployeePaymentDetailsScreenState
 
     try {
       final DateTime now = DateTime.now();
+      final empId = widget.employee['id'];
+
+      // 1. Initiate payment on backend
+      final initResponse = await http.post(
+        AppConfig.apiUri('/api/payroll/initiate-payment'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'employeeId': empId, 'amount': netSalary}),
+      );
+
+      if (initResponse.statusCode != 200) {
+        final errData = jsonDecode(initResponse.body);
+        throw errData['details'] ?? errData['error'] ?? 'Initiation failed';
+      }
+
+      final initData = jsonDecode(initResponse.body);
+      final String pidx = initData['pidx'];
+      final String paymentUrl = initData['payment_url'];
+      final String publicKey = initData['publicKey'];
+
+      // 2. Initialize and open Khalti SDK
+      final environment =
+          publicKey.startsWith('live_') ? Environment.prod : Environment.test;
+
+      final payConfig = KhaltiPayConfig(
+        publicKey: publicKey,
+        pidx: pidx,
+        environment: environment,
+        paymentUrl: paymentUrl,
+      );
+
+      late final Khalti khalti;
+      khalti = await Khalti.init(
+        enableDebugging: true,
+        payConfig: payConfig,
+        onPaymentResult: (paymentResult, sdk) {
+          sdk.close(context);
+          // 3. Verify payment on backend
+          _verifyPayment(pidx, netSalary, now.month, now.year);
+        },
+        onReturn: () {
+          khalti.close(context);
+          // 3. Verify payment on backend
+          _verifyPayment(pidx, netSalary, now.month, now.year);
+        },
+        onMessage: (
+          sdk, {
+          description,
+          statusCode,
+          event,
+          needsPaymentConfirmation,
+        }) async {
+          sdk.close(context);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Khalti: ${description ?? 'Payment cancelled.'}'),
+              backgroundColor: Colors.orange,
+            ),
+          );
+        },
+      );
+
+      setState(() {
+        _isProcessingPay = false;
+      });
+
+      khalti.open(context);
+    } catch (e) {
+      setState(() {
+        _isProcessingPay = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Payment Initiation Failed: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  Future<void> _verifyPayment(
+    String pidx,
+    double netSalary,
+    int month,
+    int year,
+  ) async {
+    setState(() {
+      _isProcessingPay = true;
+    });
+
+    try {
       final response = await http.post(
-        AppConfig.apiUri('/api/payroll/pay'),
+        AppConfig.apiUri('/api/payroll/verify-payment'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
+          'pidx': pidx,
           'employeeId': widget.employee['id'],
           'amount': netSalary,
-          'month': now.month,
-          'year': now.year,
+          'month': month,
+          'year': year,
         }),
       );
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        _showSuccessDialog(
-          data['message'] ?? 'Payment processed successfully.',
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(data['message'] ?? 'Payment verified successfully.'),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 4),
+          ),
         );
       } else {
-        throw 'Payment server error: ${response.statusCode}';
+        throw 'Verification failed: ${response.body}';
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Payment Failed: $e'),
+          content: Text('Verification Failed: $e'),
           backgroundColor: Colors.red,
         ),
       );
